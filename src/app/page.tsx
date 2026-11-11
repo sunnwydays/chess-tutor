@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import GameList from "@/components/GameList";
-import GameViewer from "@/components/GameViewer";
+import Lesson from "@/components/Lesson";
 import UsernameForm from "@/components/UsernameForm";
 import type { GameSummary, PlayerStats } from "@/lib/types";
 
@@ -77,7 +77,7 @@ export default function Home() {
             {selected.black.rating})
             {selected.opening ? ` | ${selected.opening}` : ""}
           </p>
-          <GameViewer game={selected} />
+          <Lesson game={selected} />
         </section>
       )}
     </main>
