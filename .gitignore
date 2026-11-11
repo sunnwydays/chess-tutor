@@ -20,3 +20,6 @@ next-env.d.ts
 
 mynotes.md
 public/stockfish/
+
+# interaction logs
+logs/
