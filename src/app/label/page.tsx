@@ -10,7 +10,7 @@ import { Chess } from "chess.js";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BoardArrow } from "@/components/Board";
-import { LABEL_TAGS, type MomentLabel, type MomentRecord } from "@/lib/moments";
+import { LABEL_TAGS, MOMENT_TYPES, type MomentLabel, type MomentRecord } from "@/lib/moments";
 
 const Board = dynamic(() => import("@/components/Board"), { ssr: false });
 
@@ -49,6 +49,14 @@ function cpText(cp: number): string {
   if (Math.abs(cp) >= 10000) return cp > 0 ? "mate" : "mated";
   return (cp / 100).toFixed(1);
 }
+
+const GROUPS = ["A", "B", "C"];
+const MOMENT_TYPE_HELP: Record<string, string> = {
+  "only-move": "One move is clearly best; the rest lose",
+  "many-roads": "Several moves are fine, the played one just wasn't",
+  "multi-idea": "Two or more different plans both work",
+};
+const GROUP_COLORS: Record<string, string> = { A: "#22c55e", B: "#3b82f6", C: "#a855f7" };
 
 const btn = "rounded bg-zinc-800 px-3 py-1 text-sm hover:bg-zinc-700 disabled:opacity-40";
 const chip = (on: boolean) =>
@@ -103,7 +111,7 @@ export default function LabelPage() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).tagName === "TEXTAREA") return;
+      if (["TEXTAREA", "INPUT"].includes((e.target as HTMLElement).tagName)) return;
       if (e.key === "ArrowLeft") setOffset((o) => Math.max(-CONTEXT_PLIES, o - 1));
       if (e.key === "ArrowRight") setOffset((o) => o + 1);
       if (e.key === "n") go(idx + 1);
@@ -143,7 +151,20 @@ export default function LabelPage() {
   const opp = g.userColor === "white" ? g.black : g.white;
   const moveNo = Math.ceil(m.ply / 2);
   const dots = m.ply % 2 === 1 ? "." : "...";
-  const engineArrows = showEngine && view.off === 0 ? (m.lines.slice(0, 1).map((l) => sanArrow(m.fenBefore, l.move, "#22c55e")).filter(Boolean) as BoardArrow[]) : [];
+  const engineArrows =
+    showEngine && view.off === 0
+      ? (m.lines.map((l) => sanArrow(m.fenBefore, l.move, GROUP_COLORS[label.lineGroups?.[l.move] ?? "A"] ?? "#22c55e")).filter(Boolean) as BoardArrow[])
+      : [];
+  const zone = label.zone ?? [];
+  function toggleZone(sq: string) {
+    if (view!.off !== 0) return;
+    save({ zone: zone.includes(sq) ? zone.filter((z) => z !== sq) : [...zone, sq] });
+  }
+  function cycleGroup(move: string) {
+    const cur = label.lineGroups?.[move] ?? "A";
+    const next = GROUPS[(GROUPS.indexOf(cur) + 1) % GROUPS.length];
+    save({ lineGroups: { ...(label.lineGroups ?? {}), [move]: next } });
+  }
   const labeled = records.filter((r) => labels[r.id]?.updatedAt).length;
   const context = g.moves.slice(Math.max(0, m.ply - 1 - CONTEXT_PLIES), m.ply - 1).join(" ");
 
@@ -192,7 +213,7 @@ export default function LabelPage() {
 
       <div className="flex flex-col gap-4 md:flex-row">
         <div className="w-full max-w-[480px]">
-          <Board fen={view.fen} orientation={g.userColor} arrows={[...view.arrows, ...engineArrows]} />
+          <Board fen={view.fen} orientation={g.userColor} arrows={[...view.arrows, ...engineArrows]} highlightSquares={view.off === 0 ? zone : []} onSquareClick={toggleZone} />
           <div className="mt-2 flex items-center justify-center gap-2">
             <button className={btn} onClick={() => setOffset((o) => Math.max(-CONTEXT_PLIES, o - 1))} disabled={view.off <= -CONTEXT_PLIES}>
               &larr;
@@ -216,11 +237,25 @@ export default function LabelPage() {
             </button>
             {showEngine && (
               <ul className="mt-2 space-y-1 text-zinc-300">
-                {m.lines.map((l, i) => (
-                  <li key={i}>
-                    <b>{l.move}</b> ({cpText(l.evalCp)}): {l.pv.slice(0, 8).join(" ")}
-                  </li>
-                ))}
+                {m.lines.map((l, i) => {
+                  const grp = label.lineGroups?.[l.move] ?? "A";
+                  return (
+                    <li key={i} className="flex items-center gap-2">
+                      <button
+                        className="rounded px-2 text-xs font-bold text-black"
+                        style={{ backgroundColor: GROUP_COLORS[grp] }}
+                        title="Click to change idea group"
+                        onClick={() => cycleGroup(l.move)}
+                      >
+                        {grp}
+                      </button>
+                      <span>
+                        <b>{l.move}</b> ({cpText(l.evalCp)}): {l.pv.slice(0, 8).join(" ")}
+                      </span>
+                    </li>
+                  );
+                })}
+                <li className="text-xs text-zinc-500">Same letter = same idea. Click the letter to change it.</li>
                 {m.punish && (
                   <li className="text-red-300">
                     Punish: {m.punish.pv.slice(0, 8).join(" ")} ({cpText(m.punish.evalCp)})
@@ -254,6 +289,37 @@ export default function LabelPage() {
                 })}
               </div>
             </div>
+            <div>
+              <p className="mb-1 text-zinc-400">Moment type</p>
+              <div className="flex flex-wrap gap-2">
+                {MOMENT_TYPES.map((t) => (
+                  <button key={t} className={chip(label.momentType === t)} onClick={() => save({ momentType: t })} title={MOMENT_TYPE_HELP[t]}>
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <input
+              className="rounded border border-zinc-700 bg-zinc-900 p-2"
+              placeholder="The idea, a few words (e.g. pin the knight, open the h-file)"
+              value={label.idea ?? ""}
+              onChange={(e) => save({ idea: e.target.value })}
+            />
+            <input
+              className="rounded border border-zinc-700 bg-zinc-900 p-2"
+              placeholder="Opponent's motif: what they threaten, or why the idea works"
+              value={label.opponentMotif ?? ""}
+              onChange={(e) => save({ opponentMotif: e.target.value })}
+            />
+            <p className="text-xs text-zinc-500">
+              Zone: click squares on the board (at the moment position) to mark where to look.{" "}
+              {zone.length ? `${zone.join(" ")} ` : ""}
+              {zone.length > 0 && (
+                <button className="underline" onClick={() => save({ zone: [] })}>
+                  clear
+                </button>
+              )}
+            </p>
             <div>
               <p className="mb-1 text-zinc-400">Good eval case?</p>
               <div className="flex gap-2">

@@ -15,11 +15,12 @@ interface Props {
   arrows?: BoardArrow[];
   highlightSquares?: string[];
   onMove?: (from: string, to: string) => boolean;
+  onSquareClick?: (square: string) => void;
 }
 
 const HIGHLIGHT: CSSProperties = { backgroundColor: "rgba(255, 213, 0, 0.45)" };
 
-export default function Board({ fen, orientation, arrows, highlightSquares, onMove }: Props) {
+export default function Board({ fen, orientation, arrows, highlightSquares, onMove, onSquareClick }: Props) {
   const squareStyles: Record<string, CSSProperties> = {};
   for (const sq of highlightSquares ?? []) squareStyles[sq] = HIGHLIGHT;
 
@@ -34,6 +35,7 @@ export default function Board({ fen, orientation, arrows, highlightSquares, onMo
           arrows: arrows ?? [],
           squareStyles,
           allowDragging: onMove !== undefined,
+          onSquareClick: onSquareClick ? ({ square }) => onSquareClick(square) : undefined,
           onPieceDrop: ({ sourceSquare, targetSquare }) =>
             onMove && targetSquare ? onMove(sourceSquare, targetSquare) : false,
         }}

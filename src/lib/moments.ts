@@ -17,9 +17,22 @@ export interface MomentLabel {
   tags: string[];
   /** Worth turning into an eval case? */
   useful?: "yes" | "maybe" | "no";
+  /** Shape of the moment; picks the ladder variant (see design_decisions/SPACED_REPETITION.md). */
+  momentType?: MomentType;
+  /** Engine line SAN -> idea group letter ("A", "B", ...). Ground truth for ideas.ts grouping. */
+  lineGroups?: Record<string, string>;
+  /** The idea in a few words, motif level ("pin the knight", "open the h-file"). */
+  idea?: string;
+  /** What the opponent threatens, or what makes the idea work. */
+  opponentMotif?: string;
+  /** Squares the player should be looking at (zone hint ground truth). */
+  zone?: string[];
   notes: string;
   updatedAt: string;
 }
+
+export const MOMENT_TYPES = ["only-move", "many-roads", "multi-idea"] as const;
+export type MomentType = (typeof MOMENT_TYPES)[number];
 
 export const LABEL_TAGS = [
   "missed tactic",
