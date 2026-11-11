@@ -10,7 +10,7 @@ import { Chess } from "chess.js";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BoardArrow } from "@/components/Board";
-import { LABEL_TAGS, MOMENT_TYPES, type MomentLabel, type MomentRecord } from "@/lib/moments";
+import { LABEL_TAGS, MOMENT_TYPES, momentKind, type MomentLabel, type MomentRecord } from "@/lib/moments";
 
 const Board = dynamic(() => import("@/components/Board"), { ssr: false });
 
@@ -78,7 +78,8 @@ export default function LabelPage() {
       .then(async (r) => {
         const body = (await r.json()) as MomentRecord[] | { error: string };
         if (!r.ok || "error" in body) throw new Error("error" in body ? body.error : "Failed");
-        setRecords(body);
+        // Controls (quiet positions for find-the-moment) have nothing to label.
+        setRecords(body.filter((r) => momentKind(r) === "critical"));
       })
       .catch((e: Error) => setError(e.message));
   }, []);
@@ -233,12 +234,21 @@ export default function LabelPage() {
               {dots} <b>{m.played}</b>: win chance {m.winProbBefore.toFixed(0)}% &rarr; {m.winProbAfter.toFixed(0)}% (eval {cpText(m.evalBefore)} &rarr; {cpText(m.evalAfter)})
             </p>
             <p className="mt-3 mb-1 font-semibold text-zinc-200">1. Before the engine</p>
+            <p className="mb-1 text-zinc-400">What would you play now, and why? One line. Don&apos;t edit it after seeing the engine.</p>
             <input
               className="w-full rounded border border-zinc-700 bg-zinc-900 p-2"
-              placeholder="Your guess now, cold: what would you play, and why? (one line, don't edit after)"
+              placeholder="e.g. Nf3, develops and covers e5"
               value={label.guess ?? ""}
               onChange={(e) => save({ guess: e.target.value })}
             />
+            <p className="mt-3 mb-1 text-zinc-400">Did you sense the move was bad when you played it? A guess is fine.</p>
+            <div className="flex flex-wrap gap-2">
+              {(["knew", "suspected", "felt-fine", "no-idea"] as const).map((a) => (
+                <button key={a} className={chip(label.awareness === a)} onClick={() => save({ awareness: a })}>
+                  {a.replace("-", " ")}
+                </button>
+              ))}
+            </div>
             <p className="mt-3 mb-1 font-semibold text-zinc-200">2. Then show the engine and fill in the rest</p>
             <button className={btn} onClick={() => setShowEngine((s) => !s)}>
               {showEngine ? "Hide engine" : "Show engine"}
@@ -275,16 +285,6 @@ export default function LabelPage() {
 
           <div className="flex flex-col gap-3 rounded border border-zinc-800 p-3 text-sm">
             <div>
-              <p className="mb-1 text-zinc-400">Did you sense it was bad when you played it? (guess is fine)</p>
-              <div className="flex flex-wrap gap-2">
-                {(["knew", "suspected", "felt-fine", "no-idea"] as const).map((a) => (
-                  <button key={a} className={chip(label.awareness === a)} onClick={() => save({ awareness: a })}>
-                    {a.replace("-", " ")}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
               <p className="mb-1 text-zinc-400">What was going on?</p>
               <div className="flex flex-wrap gap-2">
                 {LABEL_TAGS.map((t) => {
@@ -307,18 +307,24 @@ export default function LabelPage() {
                 ))}
               </div>
             </div>
-            <input
-              className="rounded border border-zinc-700 bg-zinc-900 p-2"
-              placeholder="The idea the engine lines share, a few words (e.g. pin the knight, open the h-file)"
-              value={label.idea ?? ""}
-              onChange={(e) => save({ idea: e.target.value })}
-            />
-            <input
-              className="rounded border border-zinc-700 bg-zinc-900 p-2"
-              placeholder="Opponent's motif: what the punish line threatens, or why the idea works"
-              value={label.opponentMotif ?? ""}
-              onChange={(e) => save({ opponentMotif: e.target.value })}
-            />
+            <div>
+              <p className="mb-1 text-zinc-400">The idea the good engine lines share, a few words.</p>
+              <input
+                className="w-full rounded border border-zinc-700 bg-zinc-900 p-2"
+                placeholder="e.g. pin the knight"
+                value={label.idea ?? ""}
+                onChange={(e) => save({ idea: e.target.value })}
+              />
+            </div>
+            <div>
+              <p className="mb-1 text-zinc-400">Opponent&apos;s motif: what the punish line threatens, or why the idea works.</p>
+              <input
+                className="w-full rounded border border-zinc-700 bg-zinc-900 p-2"
+                placeholder="e.g. Nxe4 wins the pinned pawn"
+                value={label.opponentMotif ?? ""}
+                onChange={(e) => save({ opponentMotif: e.target.value })}
+              />
+            </div>
             <p className="text-xs text-zinc-500">
               Zone: click squares on the board (at the moment position) to mark where to look.{" "}
               {zone.length ? `${zone.join(" ")} ` : ""}
@@ -338,9 +344,10 @@ export default function LabelPage() {
                 ))}
               </div>
             </div>
+            <p className="text-zinc-400">Notes: what hint would have helped? Unsure about a label? Does the engine miss something?</p>
             <textarea
               className="min-h-[6rem] rounded border border-zinc-700 bg-zinc-900 p-2"
-              placeholder="Notes: what hint would have helped? Unsure about a label? Does the engine miss something?"
+              placeholder="free text"
               value={label.notes}
               onChange={(e) => save({ notes: e.target.value })}
             />
