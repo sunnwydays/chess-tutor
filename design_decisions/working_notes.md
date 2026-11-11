@@ -12,3 +12,7 @@ Use a combination of threat arrows to illustrate the opponent's threat, as well 
 It's really easy to give hints that give away too much, so I think highlighting an area of the board is one step towards not giving away too much, as well as Using arrows of your opponent's ideas so you can counter them, and then only naming pieces, tactics, and moves as a last resort. I think there could still be an intermediary step. 
 
 Keep prompt responses short and let the visualization do the talking, because images are worth a thousand words. 
+
+Imagine a stripped-away version of the board that only has the relevant parts, so you're not distracted by other portions of the board, like tunnel vision. 
+
+Currently in design, we're prioritizing ideas over best moves. This involves higher multi-PV. The idea is progress over perfection. Perfection, in this case, is too narrow of a window to learn from. 
