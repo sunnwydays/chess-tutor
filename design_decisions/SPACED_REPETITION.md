@@ -23,6 +23,54 @@ Grade for a rep = starting level + hints taken. Lower is better.
 
 Level 0 is the transfer skill (noticing a critical moment without being told) and absorbs the control-position idea: some streams contain no moment and "nothing here" is the right answer.
 
+## Review forms with conversation
+
+Two forms are LLM-heavier than the ladder. Both grade on a three-point scale: **incorrect / missing details / correct**. Both end by dropping into the hint ladder, so "how to improve" is the existing flow.
+
+### Form A: explain the idea (level 1)
+
+The player writes one or two sentences: what is the plan, where on the board, and what is the opponent up to.
+
+Ground truth comes from /label, three fields per moment:
+- idea tag (what to do)
+- zone squares (where)
+- opponent motif (what they threaten / what makes the idea work)
+
+Grading is extract-then-compare, so the LLM never decides correctness:
+1. Haiku extracts claims from the answer as JSON: `{ ideas: string[], squares: string[], pieces: string[], opponentThreats: string[] }`. Any square or SAN it extracts is validated with chess.js; invalid ones are dropped.
+2. Pure code scores each dimension hit / partial / miss against the labels (idea by tag match on the motif level, zone by square overlap, opponent motif by tag match).
+3. Fixed rule for the overall grade:
+   - idea miss -> **incorrect**
+   - idea hit, zone or opponent motif not hit -> **missing details**
+   - all three hit -> **correct**
+
+Conversation, bounded:
+- After the grade the coach asks at most one follow-up, aimed at the weakest dimension ("You saw the pin. What is White threatening on the kingside?"). The follow-up is regraded on the same rubric and can raise the grade one step.
+- Max two player turns, then the ladder starts at a level set by the grade (correct -> level 2, missing details -> level 3, incorrect -> level 4).
+
+Eval: frozen player answers per case (3-4 per moment, one per grade plus a vague one) with hand grades. Metric is judge agreement with the hand grade, target >= 90%. This is the verbal-reasoning test and the model-engineering showcase: structured extraction, validation, deterministic rubric, measured agreement.
+
+### Form B: find the moment (level 0)
+
+The player gets a stream of 6-12 plies, no eval bar, no symbols, and must say which move was the inaccuracy, or "none".
+
+Stream construction, deterministic from the scan output:
+- Window ends 0-4 plies after the critical move, offset chosen by seeded random so the moment can be first, last or in between.
+- Streams start from a quiet position (no eval swing in the 2 plies before the window start).
+- One in three or four streams is a control: a window with no moment, where "none" is correct.
+- Only the player's own moves are candidates; opponent moves are shown but not selectable.
+
+Grading:
+- exact ply -> **correct**
+- off by one move by the same side, or "none" on a stream whose moment is under the inaccuracy threshold -> **missing details**
+- anything else, including a pick on a control stream -> **incorrect**
+
+Then the board jumps to the picked (or true) position and the ladder continues, starting at level 2 after correct, level 4 otherwise.
+
+Difficulty knob: the eval swing of the moment. Big swings first, smaller swings as the player graduates items.
+
+Eval: deterministic, no LLM. Unit tests on stream construction (moment inside the window, quiet start, control ratio) and on grading.
+
 ## Anti-memorization
 
 Serve the original position at most once in review. After that, in order of preference:
@@ -82,7 +130,8 @@ Same log as the lesson. Add: `mode: "lesson" | "review"`, `reviewItemId`, `posit
 
 ## What the LLM does here
 
-- Grades the level-1 idea answer against the idea tag (Haiku, structured verdict, cites the tag it matched).
+- Extracts claims from the level-1 idea answer (Haiku, structured JSON). Code does the comparing and grading.
+- Writes the one follow-up question, given the dimension that was missed.
 - Proposes perturbations (one piece change, with a reason). Never decides if they are valid.
 - Writes the one-line context for level 5 from the PGN.
 
@@ -91,17 +140,19 @@ Everything else is engine plus pure functions.
 ## Scope
 
 v0 (demo):
-- Levels 5, 4, 2, 1. Siblings when a tag has 2+ moments, else idea question. Color-swap perturbation only.
+- Levels 5, 4, 2, 1 and 0 (find the moment, with control streams). Siblings when a tag has 2+ moments, else idea question. Color-swap perturbation only.
+- Form A with the three-field rubric and one follow-up turn.
 - Virtual clock, skip-to-future button, Review tab serving due items.
 - JSONL logging with the fields above.
 
 Later:
-- Level 3 (capped ladder) and level 0 (find the moment, with no-moment control streams).
+- Level 3 (capped ladder).
 - LLM-proposed perturbations with engine validation.
 - Memorization detector tuning from logged `msToFirstAttempt`.
 
 ## Open questions
 
-- Idea tag granularity: "pin" is too coarse to find siblings, "pin on the f6 knight by Bg5" too fine. Suggest two levels, motif and plan, and match siblings on motif.
+- Idea tag granularity: "pin" is too coarse to find siblings, "pin on the f6 knight by Bg5" too fine. Suggest two levels, motif and plan, and match siblings on motif. The /label page needs the opponent-motif field and zone squares for Form A.
+- Stream length and offset for Form B: start with 8 plies and 0-4 offset, tune from logged accuracy.
 - Should level 5 context include the player's own stated reasoning from the lesson (NEXT_STEPS item 3)? Likely yes, it is the cheapest "what were you thinking" context.
 - Grade for "right idea, wrong move": count as grade with a +1 penalty rather than a miss.
