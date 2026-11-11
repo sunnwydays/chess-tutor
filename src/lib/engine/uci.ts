@@ -71,7 +71,12 @@ export class UciEngine {
       const h = this.queue[0];
       if (h && h(line)) this.queue.shift();
     });
-    this.ready = this.waitFor(/^uciok/, "uci").then(() => this.sync());
+    // The engine loads asynchronously and drops commands sent before it is
+    // up, so keep sending "uci" until it answers.
+    const timer = setInterval(() => t.send("uci"), 250);
+    this.ready = this.waitFor(/^uciok/, "uci")
+      .then(() => clearInterval(timer))
+      .then(() => this.sync());
   }
 
   private waitFor(re: RegExp, cmd?: string, collect?: (line: string) => void): Promise<string> {

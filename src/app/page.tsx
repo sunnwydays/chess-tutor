@@ -38,7 +38,12 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
-      <h1 className="text-2xl font-semibold">AI Chess Coach</h1>
+      <div className="flex items-baseline justify-between">
+        <h1 className="text-2xl font-semibold">AI Chess Coach</h1>
+        <a href="/label" className="text-sm text-zinc-500 hover:text-emerald-400">
+          Label moments
+        </a>
+      </div>
 
       {!selected && <UsernameForm onSubmit={load} disabled={loading} />}
       {loading && <p className="text-zinc-400">Loading games...</p>}

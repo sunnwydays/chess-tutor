@@ -12,11 +12,10 @@ export function createNodeEngine(): UciEngine {
   const init = require("stockfish") as (flavor: string, cb: (line: string) => void) => SfModule;
   let handler: (line: string) => void = () => {};
   // The engine module treats process.argv.slice(2) as its own CLI arguments
-  // and stalls on unknown ones, so hide the script's args while it loads.
-  const argv = process.argv;
-  process.argv = argv.slice(0, 2);
+  // and reads them asynchronously after init, so the script's args must stay
+  // hidden for the rest of the process. Read your args BEFORE calling this.
+  process.argv = process.argv.slice(0, 2);
   const sf = init("lite-single", (line) => handler(line));
-  process.argv = argv;
   const t: UciTransport = {
     send: (cmd) => sf.processCommand(cmd),
     onLine: (cb) => {
