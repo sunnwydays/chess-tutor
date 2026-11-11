@@ -1,3 +1,4 @@
+import "server-only";
 import { NextResponse } from "next/server";
 import { fetchRecentGames, fetchStats, UnknownUserError } from "@/lib/chesscom";
 

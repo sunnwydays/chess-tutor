@@ -19,3 +19,4 @@ transcripts/*.tmp
 next-env.d.ts
 
 mynotes.md
+public/stockfish/

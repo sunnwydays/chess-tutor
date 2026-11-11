@@ -1,4 +1,3 @@
-import "server-only";
 import type { GameSummary, PlayerStats } from "./types";
 
 const BASE = "https://api.chess.com/pub/player";

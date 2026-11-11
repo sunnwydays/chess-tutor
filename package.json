@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "predev": "node scripts/copy_engine.mjs",
+    "prebuild": "node scripts/copy_engine.mjs",
+    "find-moments": "tsx scripts/find_moments.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
