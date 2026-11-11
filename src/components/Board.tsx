@@ -23,17 +23,21 @@ export default function Board({ fen, orientation, arrows, highlightSquares, onMo
   const squareStyles: Record<string, CSSProperties> = {};
   for (const sq of highlightSquares ?? []) squareStyles[sq] = HIGHLIGHT;
 
+  // The board grid is height:100%; in a stretched flex row that makes rows spread apart.
+  // A square wrapper pins the height to the width.
   return (
-    <Chessboard
-      options={{
-        position: fen,
-        boardOrientation: orientation,
-        arrows: arrows ?? [],
-        squareStyles,
-        allowDragging: onMove !== undefined,
-        onPieceDrop: ({ sourceSquare, targetSquare }) =>
-          onMove && targetSquare ? onMove(sourceSquare, targetSquare) : false,
-      }}
-    />
+    <div style={{ aspectRatio: "1 / 1", width: "100%" }}>
+      <Chessboard
+        options={{
+          position: fen,
+          boardOrientation: orientation,
+          arrows: arrows ?? [],
+          squareStyles,
+          allowDragging: onMove !== undefined,
+          onPieceDrop: ({ sourceSquare, targetSquare }) =>
+            onMove && targetSquare ? onMove(sourceSquare, targetSquare) : false,
+        }}
+      />
+    </div>
   );
 }
