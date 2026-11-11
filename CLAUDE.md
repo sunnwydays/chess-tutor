@@ -1,6 +1,6 @@
 # AI chess coach (Chess.com take-home, Option B)
 
-Self-contained web app: a Chess.com username -> recent games -> Stockfish analysis -> an LLM coach walks the player through the 1-3 critical moments of a game with a hint ladder. Spec: `ChessCom_AIML_Internship_Take_Home_Assignment.pdf`. Plan and scope: `PLAN.md`. Sunny's raw ideas: `brainstorm_todo_45min.md`. Post-v0 ideas: `NEXT_STEPS.md` (not a priority in the 4 hours).
+Self-contained web app: a Chess.com username -> recent games -> Stockfish analysis -> an LLM coach walks the player through the 1-3 critical moments of a game with a hint ladder. Spec: `ChessCom_AIML_Internship_Take_Home_Assignment.pdf`. Plan and scope: `PLAN.md`. Sunny's raw ideas: `brainstorm_todo_45min.md`. Post-v0 ideas: `design_decisions/NEXT_STEPS.md` (not a priority in the 4 hours).
 
 ## Design rules (don't break these)
 - **The engine judges, the LLM explains.** Stockfish computes evals, best lines, centipawn loss. The LLM only sees the engine output + the game and never decides on its own whether a move is good.
