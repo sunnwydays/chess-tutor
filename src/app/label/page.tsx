@@ -214,7 +214,7 @@ export default function LabelPage() {
 
       <div className="flex flex-col gap-4 md:flex-row">
         <div className="w-full max-w-[480px]">
-          <Board fen={view.fen} orientation={g.userColor} arrows={[...view.arrows, ...engineArrows]} highlightSquares={view.off === 0 ? zone : []} onSquareClick={toggleZone} />
+          <Board fen={view.fen} orientation={g.userColor} arrows={[...view.arrows, ...engineArrows]} highlightSquares={view.off === 0 ? zone : []} highlightColor="rgba(168, 85, 247, 0.7)" onSquareClick={toggleZone} />
           <div className="mt-2 flex items-center justify-center gap-2">
             <button className={btn} onClick={() => setOffset((o) => Math.max(-CONTEXT_PLIES, o - 1))} disabled={view.off <= -CONTEXT_PLIES}>
               &larr;

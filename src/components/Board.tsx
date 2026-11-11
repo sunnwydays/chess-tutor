@@ -14,15 +14,19 @@ interface Props {
   orientation: "white" | "black";
   arrows?: BoardArrow[];
   highlightSquares?: string[];
+  /** CSS color for highlightSquares; default soft yellow. */
+  highlightColor?: string;
   onMove?: (from: string, to: string) => boolean;
   onSquareClick?: (square: string) => void;
 }
 
-const HIGHLIGHT: CSSProperties = { backgroundColor: "rgba(255, 213, 0, 0.45)" };
-
-export default function Board({ fen, orientation, arrows, highlightSquares, onMove, onSquareClick }: Props) {
+export default function Board({ fen, orientation, arrows, highlightSquares, highlightColor, onMove, onSquareClick }: Props) {
   const squareStyles: Record<string, CSSProperties> = {};
-  for (const sq of highlightSquares ?? []) squareStyles[sq] = HIGHLIGHT;
+  const highlight: CSSProperties = {
+    backgroundColor: highlightColor ?? "rgba(255, 213, 0, 0.45)",
+    boxShadow: "inset 0 0 0 3px rgba(255,255,255,0.6)",
+  };
+  for (const sq of highlightSquares ?? []) squareStyles[sq] = highlight;
 
   // The board grid is height:100%; in a stretched flex row that makes rows spread apart.
   // A square wrapper pins the height to the width.
