@@ -1,17 +1,38 @@
 import type { MomentAnalysis } from "./engine/types";
 import type { GameSummary } from "./types";
 
-/** One critical moment from a scanned game, as written by scripts/find_moments.ts. */
+/**
+ * One scanned position, as written by scripts/find_moments.ts.
+ * "critical": a blunder/mistake on the user's move (the lesson material).
+ * "control": a user move that was fine, in a stretch where the eval sat still.
+ * Controls feed find-the-moment streams where "nothing here" is the answer.
+ */
+export type MomentKind = "critical" | "control";
+
 export interface MomentRecord {
   /** `${gameId}-${ply}` */
   id: string;
-  game: Omit<GameSummary, "pgn"> & { moves: string[] };
+  /** Missing in files written before controls existed; read it as "critical". */
+  kind?: MomentKind;
+  game: Omit<GameSummary, "pgn"> & {
+    moves: string[];
+    /** Win probability (0-100, user POV) after each ply; index 0 = start position. */
+    winProbs?: number[];
+    /** Plies of every critical moment in this game. */
+    criticalPlies?: number[];
+  };
   moment: MomentAnalysis;
+}
+
+export function momentKind(r: MomentRecord): MomentKind {
+  return r.kind ?? "critical";
 }
 
 /** What the player says about a moment on the /label page. */
 export interface MomentLabel {
   id: string;
+  /** What the player would play now, cold, before seeing the engine. SAN or free text. */
+  guess?: string;
   /** Did the player sense the move was bad when playing it? */
   awareness?: "knew" | "suspected" | "felt-fine" | "no-idea";
   tags: string[];

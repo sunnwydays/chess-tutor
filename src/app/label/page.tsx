@@ -232,7 +232,15 @@ export default function LabelPage() {
               Move {moveNo}
               {dots} <b>{m.played}</b>: win chance {m.winProbBefore.toFixed(0)}% &rarr; {m.winProbAfter.toFixed(0)}% (eval {cpText(m.evalBefore)} &rarr; {cpText(m.evalAfter)})
             </p>
-            <button className={`${btn} mt-2`} onClick={() => setShowEngine((s) => !s)}>
+            <p className="mt-3 mb-1 font-semibold text-zinc-200">1. Before the engine</p>
+            <input
+              className="w-full rounded border border-zinc-700 bg-zinc-900 p-2"
+              placeholder="Your guess now, cold: what would you play, and why? (one line, don't edit after)"
+              value={label.guess ?? ""}
+              onChange={(e) => save({ guess: e.target.value })}
+            />
+            <p className="mt-3 mb-1 font-semibold text-zinc-200">2. Then show the engine and fill in the rest</p>
+            <button className={btn} onClick={() => setShowEngine((s) => !s)}>
               {showEngine ? "Hide engine" : "Show engine"}
             </button>
             {showEngine && (
@@ -267,7 +275,7 @@ export default function LabelPage() {
 
           <div className="flex flex-col gap-3 rounded border border-zinc-800 p-3 text-sm">
             <div>
-              <p className="mb-1 text-zinc-400">Did you sense it was bad when you played it?</p>
+              <p className="mb-1 text-zinc-400">Did you sense it was bad when you played it? (guess is fine)</p>
               <div className="flex flex-wrap gap-2">
                 {(["knew", "suspected", "felt-fine", "no-idea"] as const).map((a) => (
                   <button key={a} className={chip(label.awareness === a)} onClick={() => save({ awareness: a })}>
@@ -301,13 +309,13 @@ export default function LabelPage() {
             </div>
             <input
               className="rounded border border-zinc-700 bg-zinc-900 p-2"
-              placeholder="The idea, a few words (e.g. pin the knight, open the h-file)"
+              placeholder="The idea the engine lines share, a few words (e.g. pin the knight, open the h-file)"
               value={label.idea ?? ""}
               onChange={(e) => save({ idea: e.target.value })}
             />
             <input
               className="rounded border border-zinc-700 bg-zinc-900 p-2"
-              placeholder="Opponent's motif: what they threaten, or why the idea works"
+              placeholder="Opponent's motif: what the punish line threatens, or why the idea works"
               value={label.opponentMotif ?? ""}
               onChange={(e) => save({ opponentMotif: e.target.value })}
             />
@@ -332,7 +340,7 @@ export default function LabelPage() {
             </div>
             <textarea
               className="min-h-[6rem] rounded border border-zinc-700 bg-zinc-900 p-2"
-              placeholder="How does this one feel? What hint would have helped? Anything the engine misses?"
+              placeholder="Notes: what hint would have helped? Unsure about a label? Does the engine miss something?"
               value={label.notes}
               onChange={(e) => save({ notes: e.target.value })}
             />
