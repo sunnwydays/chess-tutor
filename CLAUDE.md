@@ -1,6 +1,6 @@
 # AI chess coach (Chess.com take-home, Option B)
 
-Self-contained web app: a Chess.com username -> recent games -> Stockfish analysis -> an LLM coach walks the player through the 1-3 critical moments of a game with a hint ladder. Spec: `ChessCom_AIML_Internship_Take_Home_Assignment.pdf`. Plan and scope: `PLAN.md`. Sunny's raw ideas: `brainstorm_todo_45min.md`.
+Self-contained web app: a Chess.com username -> recent games -> Stockfish analysis -> an LLM coach walks the player through the 1-3 critical moments of a game with a hint ladder. Spec: `ChessCom_AIML_Internship_Take_Home_Assignment.pdf`. Plan and scope: `PLAN.md`. Sunny's raw ideas: `brainstorm_todo_45min.md`. Post-v0 ideas: `NEXT_STEPS.md` (not a priority in the 4 hours).
 
 ## Design rules (don't break these)
 - **The engine judges, the LLM explains.** Stockfish computes evals, best lines, centipawn loss. The LLM only sees the engine output + the game and never decides on its own whether a move is good.
@@ -12,7 +12,7 @@ Self-contained web app: a Chess.com username -> recent games -> Stockfish analys
 
 ## Stack and commands
 - Next.js (App Router) + TypeScript, `chess.js`, `react-chessboard`, `stockfish` (single-threaded WASM in a Web Worker, client-side), `@anthropic-ai/sdk`.
-- Models: coach `claude-opus-5-5` (adaptive thinking, effort medium, `fallbacks: "default"`), eval judge `claude-haiku-5-5`. Key in `.env` as `ANTHROPIC_API_KEY` (never committed).
+- Models: coach `claude-sonnet-5-5` (adaptive thinking, effort medium, `fallbacks: "default"`), eval judge `claude-haiku-5-5`. Engine depth 10, MultiPV 3 at depth 14 on critical positions only. Key in `.env` as `ANTHROPIC_API_KEY` (never committed).
 - Run: `npm install && npm run dev`. Type-check: `npx tsc --noEmit`. Eval: `npm run eval` (`scripts/eval.ts` over `evals/cases.json`; run after any prompt change).
 - Chess.com API needs no auth; send `User-Agent: ai-chess-coach-takehome` from the server route only. Never put Sunny's email or name in requests.
 
