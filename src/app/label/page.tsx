@@ -158,7 +158,6 @@ export default function LabelPage() {
       : [];
   const zone = label.zone ?? [];
   function toggleZone(sq: string) {
-    if (view!.off !== 0) return;
     save({ zone: zone.includes(sq) ? zone.filter((z) => z !== sq) : [...zone, sq] });
   }
   function cycleGroup(move: string) {
@@ -214,7 +213,7 @@ export default function LabelPage() {
 
       <div className="flex flex-col gap-4 md:flex-row">
         <div className="w-full max-w-[480px]">
-          <Board fen={view.fen} orientation={g.userColor} arrows={[...view.arrows, ...engineArrows]} highlightSquares={view.off === 0 ? zone : []} highlightColor="rgba(168, 85, 247, 0.7)" onSquareClick={toggleZone} />
+          <Board fen={view.fen} orientation={g.userColor} arrows={[...view.arrows, ...engineArrows]} highlightSquares={zone} highlightColor="rgba(168, 85, 247, 0.7)" onSquareClick={toggleZone} />
           <div className="mt-2 flex items-center justify-center gap-2">
             <button className={btn} onClick={() => setOffset((o) => Math.max(-CONTEXT_PLIES, o - 1))} disabled={view.off <= -CONTEXT_PLIES}>
               &larr;
@@ -326,7 +325,7 @@ export default function LabelPage() {
               />
             </div>
             <p className="text-xs text-zinc-500">
-              Zone: click squares on the board (at the moment position) to mark where to look.{" "}
+              Zone: click squares on the board (at any step) to mark where to look.{" "}
               {zone.length ? `${zone.join(" ")} ` : ""}
               {zone.length > 0 && (
                 <button className="underline" onClick={() => save({ zone: [] })}>
