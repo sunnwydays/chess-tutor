@@ -68,7 +68,7 @@ export default function LabelPage() {
   const [labels, setLabels] = useState<Record<string, MomentLabel>>({});
   const [idx, setIdx] = useState(0);
   /** Plies shown relative to the moment's move: -4..0 game context, 1.. = punish line. */
-  const [offset, setOffset] = useState(0);
+  const [offset, setOffset] = useState(-1);
   const [showEngine, setShowEngine] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -104,7 +104,7 @@ export default function LabelPage() {
     (n: number) => {
       if (!records) return;
       setIdx(Math.max(0, Math.min(records.length - 1, n)));
-      setOffset(0);
+      setOffset(-1);
       setShowEngine(false);
     },
     [records],
@@ -131,7 +131,7 @@ export default function LabelPage() {
     const off = Math.max(-CONTEXT_PLIES, Math.min(maxOffset, offset));
     if (off <= 0) {
       const { fen, arrow } = positionAt(moves, ply + off);
-      return { fen, arrows: arrow ? [arrow] : [], caption: off === 0 ? `You played ${rec.moment.played}` : `${-off} plies before`, maxOffset, off };
+      return { fen, arrows: arrow ? [arrow] : [], caption: off === -1 ? `Before your move (you played ${rec.moment.played})` : off === 0 ? `You played ${rec.moment.played}` : `${-off} plies before`, maxOffset, off };
     }
     // Walk the punishing line from the position after the played move.
     const chess = new Chess(fenBefore);
@@ -153,7 +153,7 @@ export default function LabelPage() {
   const moveNo = Math.ceil(m.ply / 2);
   const dots = m.ply % 2 === 1 ? "." : "...";
   const engineArrows =
-    showEngine && view.off === 0
+    showEngine && view.off === -1
       ? (m.lines.map((l) => sanArrow(m.fenBefore, l.move, GROUP_COLORS[label.lineGroups?.[l.move] ?? "A"] ?? "#22c55e")).filter(Boolean) as BoardArrow[])
       : [];
   const zone = label.zone ?? [];
