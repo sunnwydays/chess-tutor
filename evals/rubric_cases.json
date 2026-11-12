@@ -1,5 +1,5 @@
 {
-  "_readme": "Form A rubric eval. One entry per moment: Sunny's /label ground truth (evals/labels_sunnwy.json) plus 4 frozen player answers with hand grades (correct, missing-details, incorrect, vague). Answers were written and graded by Claude against Sunny's labels. scripts/eval_rubric.ts extracts claims with Haiku, scores with src/lib/review/rubric.ts, and reports agreement with `expected`.",
+  "_readme": "Form A rubric eval. One entry per moment: Sunny's /label ground truth (labels.json) plus 4 frozen player answers with hand grades (correct, missing-details, incorrect, vague). Answers were written and graded by Claude against Sunny's labels. scripts/eval_rubric.ts extracts claims with Haiku, scores with src/lib/review/rubric.ts, and reports agreement with `expected`.",
   "moments": [
     {
       "momentId": "186756902744-25",
