@@ -166,7 +166,6 @@ export default function CoachReply({ stage, attempt, response, moment, me, anima
   const verdict = stage === "attempt" && response.attemptVerdict ? VERDICTS[response.attemptVerdict] : null;
   const isPlayed = stage === "attempt" && attempt && normSan(attempt) === normSan(moment.played);
   const hasHeader = stage === "attempt" || response.source === "fallback";
-  const attemptMove = attempt ? resolveSan(moment.fenBefore, attempt) : null;
   // Before the move rung only the attempted move itself may be previewed.
   const canHover = (san: string) => hoverAll || (stage === "attempt" && !!attempt && normSan(san) === normSan(attempt));
   const ref = useRef<HTMLDivElement>(null);
@@ -178,24 +177,7 @@ export default function CoachReply({ stage, attempt, response, moment, me, anima
     <Card ref={ref} className={cx("animate-fade-up p-3.5", flash && "flash-ring border-accent/60")}>
       {hasHeader && (
         <div className="mb-2 flex flex-wrap items-center gap-2">
-          {stage === "attempt" && attempt && (
-            attemptMove ? (
-              <button
-                type="button"
-                className="group rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
-                onMouseEnter={() => onHoverMove?.(attemptMove)}
-                onMouseLeave={() => onHoverMove?.(null)}
-                onFocus={() => onHoverMove?.(attemptMove)}
-                onBlur={() => onHoverMove?.(null)}
-              >
-                <Chip className="font-mono text-fg underline decoration-dotted underline-offset-2 group-hover:decoration-solid">
-                  {attempt}
-                </Chip>
-              </button>
-            ) : (
-              <Chip className="font-mono text-fg">{attempt}</Chip>
-            )
-          )}
+          {stage === "attempt" && attempt && <AttemptPill san={attempt} fen={moment.fenBefore} onHoverMove={onHoverMove} />}
           {verdict && <Chip tone={verdict.tone}>{verdict.label}</Chip>}
           {isPlayed && <Chip>{who(me).sameMove}</Chip>}
           {response.source === "fallback" && (
@@ -214,13 +196,39 @@ export default function CoachReply({ stage, attempt, response, moment, me, anima
   );
 }
 
+/** The tried move as a pill; hovering it previews the move's arrow. */
+function AttemptPill({ san, fen, onHoverMove }: { san: string; fen: string; onHoverMove?: (m: HoverMove | null) => void }) {
+  const move = resolveSan(fen, san);
+  if (!move) return <Chip className="font-mono text-fg">{san}</Chip>;
+  return (
+    <button
+      type="button"
+      className="group rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+      onMouseEnter={() => onHoverMove?.(move)}
+      onMouseLeave={() => onHoverMove?.(null)}
+      onFocus={() => onHoverMove?.(move)}
+      onBlur={() => onHoverMove?.(null)}
+    >
+      <Chip className="font-mono text-fg underline decoration-dotted underline-offset-2 group-hover:decoration-solid">{san}</Chip>
+    </button>
+  );
+}
+
 /** Placeholder card while a reply is being fetched. */
-export function CoachThinking({ attempt }: { attempt?: string }) {
+export function CoachThinking({
+  attempt,
+  fen,
+  onHoverMove,
+}: {
+  attempt?: string;
+  fen?: string;
+  onHoverMove?: (m: HoverMove | null) => void;
+}) {
   return (
     <Card className="animate-fade-in p-3.5">
       {attempt && (
         <div className="mb-2">
-          <Chip className="font-mono text-fg">{attempt}</Chip>
+          {fen ? <AttemptPill san={attempt} fen={fen} onHoverMove={onHoverMove} /> : <Chip className="font-mono text-fg">{attempt}</Chip>}
         </div>
       )}
       <TextSkeleton lines={3} />

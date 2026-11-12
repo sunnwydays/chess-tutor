@@ -410,7 +410,7 @@ export default function MomentPanel({
         </p>
       )}
       {cardsFor("attempt")}
-      {pending?.stage === "attempt" && <CoachThinking attempt={pending.attempt} />}
+      {pending?.stage === "attempt" && <CoachThinking attempt={pending.attempt} fen={moment.fenBefore} onHoverMove={setHover} />}
       {solved && !explained && pending?.stage !== "explain" && (
         <Card className="animate-pop border-accent/30 bg-accent/5 p-3.5">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
