@@ -23,3 +23,5 @@ public/stockfish/
 
 # interaction logs
 logs/
+
+*.pdf
