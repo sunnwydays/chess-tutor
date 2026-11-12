@@ -32,19 +32,14 @@ function moveInfo(fen: string, san: string): MoveInfo | null {
   }
 }
 
-/** The user's own moves in a line (indices 0, 2, 4...). */
-function userMoves(l: EngineLine, n = 3): string[] {
-  return l.pv.filter((_, i) => i % 2 === 0).slice(0, n);
-}
-
 /**
- * Two lines share an idea when: the first move of one shows up among the first
- * user moves of the other (move-order transposition), or both move the same
- * piece from the same square (the point is "this piece has to move"), or both
- * capture on the same square.
+ * Two lines share an idea when both move the same piece from the same square
+ * (the point is "this piece has to move"), or both capture on the same square.
+ * A move-order rule (one line's first move appears later in the other) was
+ * tried and dropped: against Sunny's labels it merged lines he keeps apart
+ * (grouping 14/22 with it, 19/22 without).
  */
 export function sameIdea(fen: string, a: EngineLine, b: EngineLine): boolean {
-  if (userMoves(a).includes(b.move) || userMoves(b).includes(a.move)) return true;
   const ia = moveInfo(fen, a.move);
   const ib = moveInfo(fen, b.move);
   if (!ia || !ib) return false;
