@@ -24,9 +24,11 @@ interface Props {
 
 export default function Board({ fen, orientation, arrows, highlightSquares, highlightColor, onMove, onSquareClick, focus }: Props) {
   const squareStyles: Record<string, CSSProperties> = {};
+  // squareStyles land on a div inside the colored square, so a translucent
+  // background tints the square and filter dims the piece on it.
   const highlight: CSSProperties = {
-    backgroundColor: highlightColor ?? "rgba(255, 213, 0, 0.45)",
-    boxShadow: "inset 0 0 0 3px rgba(255,255,255,0.6)",
+    backgroundColor: highlightColor ?? "rgba(255, 200, 0, 0.7)",
+    boxShadow: "inset 0 0 0 4px rgba(255, 140, 0, 0.95)",
   };
   if (focus && focus.length > 0) {
     const lit = new Set(focus);
@@ -34,8 +36,8 @@ export default function Board({ fen, orientation, arrows, highlightSquares, high
       for (let r = 1; r <= 8; r++) {
         const sq = `${f}${r}`;
         squareStyles[sq] = lit.has(sq)
-          ? { boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.35)" }
-          : { filter: "brightness(0.4)" };
+          ? { boxShadow: "inset 0 0 0 3px rgba(255,255,255,0.85)" }
+          : { backgroundColor: "rgba(0,0,0,0.6)", filter: "brightness(0.45) saturate(0.4)" };
       }
     }
   }

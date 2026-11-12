@@ -14,9 +14,10 @@ interface Props {
   game: GameSummary;
 }
 
-function moveLabel(ply: number, san: string): string {
+/** Move number only: naming the played move would give the moment away. */
+function moveLabel(ply: number): string {
   const n = Math.ceil(ply / 2);
-  return `${n}.${ply % 2 === 0 ? ".." : ""} ${san}`;
+  return `${n}${ply % 2 === 0 ? "..." : ""}`;
 }
 
 /** One game: engine scan with a progress bar, then the 1-3 critical moments as tabs. */
@@ -78,7 +79,7 @@ export default function Lesson({ game }: Props) {
             }}
             className={`${tab} ${selected === i && !replay ? "bg-emerald-700 text-white" : "bg-zinc-800 hover:bg-zinc-700"}`}
           >
-            Moment {i + 1}: {moveLabel(m.ply, m.played)}
+            Moment {i + 1}: move {moveLabel(m.ply)}
             <span className="ml-2 text-xs opacity-70">-{(m.winProbBefore - m.winProbAfter).toFixed(0)}%</span>
           </button>
         ))}

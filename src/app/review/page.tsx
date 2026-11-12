@@ -352,7 +352,9 @@ function RepView({
           <p className="text-zinc-300">
             {end.solved && end.hintsTaken === 0
               ? "Found it with no hints. It comes back later with less help."
-              : "Not this time. It comes back sooner, with a bit more help."}
+              : end.solved
+                ? `Solved with ${end.hintsTaken} hint${end.hintsTaken === 1 ? "" : "s"}. This position comes back sooner, with a bit more help.`
+                : "Answer shown. This position comes back sooner, with a bit more help."}
           </p>
           {label?.idea && (
             <p className="text-zinc-400">
