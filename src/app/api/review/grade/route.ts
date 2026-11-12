@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { Chess } from "chess.js";
 import { extractClaims } from "@/lib/review/extract";
+import { classifyApiError } from "@/lib/coach/client";
+import { checkRateLimit, clientIp } from "@/lib/ratelimit";
 import {
   followUpQuestion,
   grade,
@@ -41,6 +43,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "label is required" }, { status: 400 });
   }
 
+  const limit = checkRateLimit(clientIp(req));
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: "The grader has hit its demo limit. Compare your answer with the idea below, then go to the board." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSec) } },
+    );
+  }
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json({ error: "The grader needs an API key. Compare your answer with the idea below." }, { status: 503 });
+  }
+
   try {
     const claims = await extractClaims(body.answer, body.fen);
     const scores = scoreClaims(claims, body.label);
@@ -55,6 +68,13 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     console.error("grade route failed", err);
-    return NextResponse.json({ error: "Grader is unavailable right now" }, { status: 502 });
+    const notice = classifyApiError(err);
+    const error =
+      notice === "budget"
+        ? "The demo's API budget is used up, so the grader is off. Compare your answer with the idea below."
+        : notice === "rate-limited"
+          ? "The grader is busy (API rate limit). Compare your answer with the idea below, or try again in a minute."
+          : "The grader is unavailable right now. Compare your answer with the idea below.";
+    return NextResponse.json({ error }, { status: 502 });
   }
 }

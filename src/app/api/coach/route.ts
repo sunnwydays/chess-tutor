@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Chess } from "chess.js";
-import { generateCoachReply } from "@/lib/coach/client";
+import { engineOnlyResponse, generateCoachReply } from "@/lib/coach/client";
+import { checkRateLimit, clientIp } from "@/lib/ratelimit";
 import { STAGES, type CoachRequest } from "@/lib/coach/schema";
 
 /** Cheap shape checks so a bad client request fails with a 400, not a stack trace. */
@@ -38,6 +39,11 @@ export async function POST(req: Request) {
   }
   const problem = checkRequest(body);
   if (problem) return NextResponse.json({ error: problem }, { status: 400 });
+
+  // Over the demo limit: still answer, from the engine only, so the lesson keeps going.
+  if (!checkRateLimit(clientIp(req)).ok) {
+    return NextResponse.json(engineOnlyResponse(body as CoachRequest, "rate-limited"));
+  }
 
   try {
     const result = await generateCoachReply(body as CoachRequest);

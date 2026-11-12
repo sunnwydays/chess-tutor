@@ -14,6 +14,9 @@ import type {
   Stage,
 } from "@/lib/coach/schema";
 import { logEvent, type LogEventInput } from "@/lib/log";
+import { normSan } from "@/lib/coach/verdict";
+import { createBrowserEngine } from "@/lib/engine/browser";
+import type { UciEngine } from "@/lib/engine/uci";
 import { rungsFor, type LadderOutcome, type Level } from "@/lib/review/session";
 import type { BoardArrow } from "./Board";
 
@@ -41,7 +44,7 @@ interface Props {
   logBase?: Partial<LogEventInput>;
   /** Fires once: a good/best attempt (solved) or the move shown (not solved). */
   onEnd?: (end: LadderEnd) => void;
-  /** Review: hide what was played and the win-chance drop (that is a hint). */
+  /** Unused: the played move is now hidden everywhere until the ladder ends. */
   hideResult?: boolean;
   /** Level 5: the moves that led here, shown above the board. */
   context?: string;
@@ -52,7 +55,7 @@ const VERDICTS: Record<AttemptVerdict, { label: string; cls: string }> = {
   good: { label: "Good move", cls: "bg-teal-700 text-white" },
   inaccuracy: { label: "Inaccuracy", cls: "bg-amber-600 text-white" },
   mistake: { label: "Mistake", cls: "bg-red-700 text-white" },
-  unknown: { label: "Not analysed", cls: "bg-zinc-700 text-zinc-200" },
+  unknown: { label: "Not in the top lines", cls: "bg-zinc-700 text-zinc-200" },
 };
 
 const RUNGS: { stage: Stage; label: string; needs: Stage }[] = [
@@ -62,6 +65,14 @@ const RUNGS: { stage: Stage; label: string; needs: Stage }[] = [
   { stage: "move", label: "Show the move", needs: "piece" },
   { stage: "explain", label: "Explain", needs: "move" },
 ];
+
+/** Why a reply is engine-only. The ladder still works; only the wording comes from code. */
+const NOTICE_LABEL: Record<NonNullable<CoachResponse["notice"]> | "none", string> = {
+  none: "engine-only reply",
+  "rate-limited": "engine-only reply: the demo's AI limit is reached, try again in a few minutes",
+  budget: "engine-only reply: the demo's AI budget is used up",
+  unavailable: "engine-only reply: the AI coach is offline",
+};
 
 const STAGE_LABEL: Record<Stage, string> = {
   attempt: "Attempt",
@@ -76,7 +87,13 @@ const ARROW_COLOR = { threat: "rgba(239,68,68,0.8)", move: "rgba(34,197,94,0.8)"
 
 const HINT_STAGES: Stage[] = ["focus", "threat", "piece", "move", "explain"];
 
-export default function MomentPanel({ game, moment, player, level = 5, mode = "lesson", logBase, onEnd, hideResult, context }: Props) {
+/** Depth for evaluating an attempt that isn't in the moment's MultiPV lines. */
+const ATTEMPT_DEPTH = 12;
+const ATTEMPT_TIMEOUT_MS = 4000;
+
+type AttemptEval = Pick<CoachRequest, "attemptEvalCp" | "attemptLine">;
+
+export default function MomentPanel({ game, moment, player, level = 5, mode = "lesson", logBase, onEnd, context }: Props) {
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,8 +101,16 @@ export default function MomentPanel({ game, moment, player, level = 5, mode = "l
   const startedAt = useRef(Date.now());
   const firstAttemptMs = useRef<number | null>(null);
   const ended = useRef(false);
+  const [confirmSkip, setConfirmSkip] = useState(false);
+  const engine = useRef<UciEngine | null>(null);
+  /** Coach replies fetched ahead while the player reads: key = exchanges so far + stage. */
+  const prefetched = useRef(new Map<string, Promise<CoachResponse>>());
   useEffect(() => {
     startedAt.current = Date.now();
+    return () => {
+      engine.current?.terminate();
+      engine.current = null;
+    };
   }, []);
 
   const taken = (s: Stage) => exchanges.some((e) => e.stage === s);
@@ -96,28 +121,73 @@ export default function MomentPanel({ game, moment, player, level = 5, mode = "l
     logEvent({ mode, ply: moment.ply, level, ...logBase, ...row });
   }
   const latest = exchanges.length > 0 ? exchanges[exchanges.length - 1] : null;
+  const isSolved = (xs: Exchange[]) =>
+    xs.some((e) => e.stage === "attempt" && (e.response.attemptVerdict === "best" || e.response.attemptVerdict === "good"));
+  const solved = isSolved(exchanges);
 
-  async function send(stage: Stage, attempt?: string) {
-    setLoading(true);
-    setError(null);
-    const history: CoachTurn[] = exchanges.map((e) => ({
+  async function fetchCoach(stage: Stage, xs: Exchange[], attempt?: string, extra?: AttemptEval): Promise<CoachResponse> {
+    const history: CoachTurn[] = xs.map((e) => ({
       stage: e.stage,
       ...(e.attempt ? { attempt: e.attempt } : {}),
       text: e.response.reply.text,
     }));
-    const body: CoachRequest = { game, moment, player, stage, history, ...(attempt ? { attempt } : {}) };
+    const body: CoachRequest = { game, moment, player, stage, history, ...(attempt ? { attempt } : {}), ...extra };
+    const res = await fetch("/api/coach", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = (await res.json()) as CoachResponse | { error: string };
+    if (!res.ok || "error" in data) throw new Error("error" in data ? data.error : "Request failed");
+    return data;
+  }
+
+  /** The rung the player is most likely to click next, so it can be fetched while they read. */
+  function nextRung(xs: Exchange[]): Stage | null {
+    const has = (s: Stage) => xs.some((e) => e.stage === s);
+    if (isSolved(xs)) return has("explain") ? null : "explain";
+    const r = RUNGS.find((r) => allowed.includes(r.stage) && !has(r.stage) && has(r.needs));
+    return r?.stage ?? null;
+  }
+
+  function prefetch(xs: Exchange[]) {
+    const stage = nextRung(xs);
+    if (!stage) return;
+    const key = `${xs.length}|${stage}`;
+    if (prefetched.current.has(key)) return;
+    const p = fetchCoach(stage, xs);
+    p.catch(() => prefetched.current.delete(key));
+    prefetched.current.set(key, p);
+  }
+
+  /** Engine eval + reply line for an attempt outside the MultiPV set, so the coach can say what it allows. */
+  async function analyseAttempt(san: string): Promise<AttemptEval> {
+    if (moment.lines.some((l) => normSan(l.move) === normSan(san)) || normSan(moment.played) === normSan(san)) return {};
     try {
-      const res = await fetch("/api/coach", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = (await res.json()) as CoachResponse | { error: string };
-      if (!res.ok || "error" in data) {
-        throw new Error("error" in data ? data.error : "Request failed");
-      }
+      const chess = new Chess(moment.fenBefore);
+      chess.move(san);
+      engine.current ??= createBrowserEngine();
+      const search = engine.current.lines(chess.fen(), ATTEMPT_DEPTH, 1, game.userColor === "white");
+      const timeout = new Promise<null>((r) => setTimeout(() => r(null), ATTEMPT_TIMEOUT_MS));
+      const lines = await Promise.race([search, timeout]);
+      const l = lines?.[0];
+      return l ? { attemptEvalCp: l.evalCp, attemptLine: l.pv.slice(0, 6) } : {};
+    } catch {
+      return {};
+    }
+  }
+
+  async function send(stage: Stage, attempt?: string) {
+    setLoading(true);
+    setError(null);
+    setConfirmSkip(false);
+    const key = `${exchanges.length}|${stage}`;
+    try {
+      const pre = attempt ? undefined : prefetched.current.get(key);
+      const data = pre ? await pre : await fetchCoach(stage, exchanges, attempt, attempt ? await analyseAttempt(attempt) : undefined);
       const next = [...exchanges, { stage, attempt, response: data }];
       setExchanges(next);
+      prefetch(next);
       const hintsTaken = hintsIn(next);
       const validationResult = data.source === "fallback" ? "fallback" : data.errors?.length ? "regenerated" : "ok";
       log({
@@ -128,19 +198,20 @@ export default function MomentPanel({ game, moment, player, level = 5, mode = "l
         msToFirstAttempt: firstAttemptMs.current ?? undefined,
         validationResult,
       });
-      const solved = stage === "attempt" && (data.attemptVerdict === "best" || data.attemptVerdict === "good");
-      if (!ended.current && (solved || stage === "move")) {
+      const solvedNow = stage === "attempt" && (data.attemptVerdict === "best" || data.attemptVerdict === "good");
+      if (!ended.current && (solvedNow || stage === "move")) {
         ended.current = true;
         const end: LadderEnd = {
-          solved,
+          solved: solvedNow,
           hintsTaken,
           msToFirstAttempt: firstAttemptMs.current ?? 0,
           motif: next.map((e) => e.response.reply.motif).filter(Boolean).pop() ?? "",
         };
-        log({ stage: "end", verdict: solved ? "solved" : "shown", hintsTaken, msToFirstAttempt: end.msToFirstAttempt });
+        log({ stage: "end", verdict: solvedNow ? "solved" : "shown", hintsTaken, msToFirstAttempt: end.msToFirstAttempt });
         onEnd?.(end);
       }
     } catch (err) {
+      prefetched.current.delete(key);
       setError(err instanceof Error ? err.message : "Request failed");
     } finally {
       setLoading(false);
@@ -172,6 +243,7 @@ export default function MomentPanel({ game, moment, player, level = 5, mode = "l
   const motif = latest?.response.reply.motif ?? "";
   const showMotif = taken("attempt") && motif.trim() !== "";
   const explained = taken("explain");
+  const showLine = explained || taken("move");
   const top = moment.lines[0];
 
   const n = Math.ceil(moment.ply / 2);
@@ -199,9 +271,9 @@ export default function MomentPanel({ game, moment, player, level = 5, mode = "l
             {dots} — what would you play?
           </h2>
           {context && <p className="text-sm text-zinc-400">Leading up to it: {context}</p>}
-          {(!hideResult || ended.current) && (
+          {ended.current && (
             <p className="text-sm text-zinc-500">
-              You played {moment.played} ({moment.winProbBefore.toFixed(0)}% -&gt;{" "}
+              Played in the game: {moment.played} ({moment.winProbBefore.toFixed(0)}% -&gt;{" "}
               {moment.winProbAfter.toFixed(0)}% win chance)
             </p>
           )}
@@ -212,6 +284,16 @@ export default function MomentPanel({ game, moment, player, level = 5, mode = "l
           )}
         </div>
 
+        {solved ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {!explained && (
+              <button className={btn} disabled={loading} onClick={() => void send("explain")}>
+                Show the full explanation
+              </button>
+            )}
+            <span className="text-sm text-zinc-400">or find another good move on the board.</span>
+          </div>
+        ) : (
         <div className="flex flex-wrap items-center gap-2">
           {RUNGS.filter((r) => allowed.includes(r.stage) || (r.stage === "explain" && taken("move"))).map((r) => (
             <button
@@ -223,14 +305,28 @@ export default function MomentPanel({ game, moment, player, level = 5, mode = "l
               {r.label}
             </button>
           ))}
-          <button
-            className="text-sm text-zinc-400 underline hover:text-zinc-200 disabled:opacity-40 disabled:no-underline"
-            disabled={loading || !taken("attempt") || taken("move")}
-            onClick={() => void send("move")}
-          >
-            {allowed.includes("move") ? "Skip to the move" : "Show the answer"}
-          </button>
+          {taken("attempt") && !taken("move") && !confirmSkip && (
+            <button
+              className="text-sm text-zinc-400 underline hover:text-zinc-200 disabled:opacity-40 disabled:no-underline"
+              disabled={loading}
+              onClick={() => setConfirmSkip(true)}
+            >
+              {allowed.includes("move") ? "Skip to the move" : "Show the answer"}
+            </button>
+          )}
+          {confirmSkip && (
+            <span className="flex items-center gap-2 text-sm text-zinc-300">
+              Show the answer now? It counts as not found.
+              <button className={btn} disabled={loading} onClick={() => void send("move")}>
+                Show it
+              </button>
+              <button className="text-zinc-400 underline hover:text-zinc-200" onClick={() => setConfirmSkip(false)}>
+                Keep trying
+              </button>
+            </span>
+          )}
         </div>
+        )}
 
         {showMotif && (
           <div>
@@ -250,19 +346,22 @@ export default function MomentPanel({ game, moment, player, level = 5, mode = "l
                   {e.stage === "attempt" && verdict && (
                     <span className={`${chip} ${verdict.cls}`}>{verdict.label}</span>
                   )}
+                  {e.stage === "attempt" && e.attempt && normSan(e.attempt) === normSan(moment.played) && (
+                    <span className={`${chip} bg-zinc-700 text-zinc-100`}>Same move as in the game</span>
+                  )}
                   {e.response.source === "fallback" && (
-                    <span className="text-xs text-zinc-500">engine-only reply</span>
+                    <span className="text-xs text-zinc-500">{NOTICE_LABEL[e.response.notice ?? "none"]}</span>
                   )}
                 </div>
                 <p className="whitespace-pre-wrap">{e.response.reply.text}</p>
               </div>
             );
           })}
-          {loading && <p className="text-sm text-zinc-400">Coach is thinking...</p>}
+          {loading && <p className="animate-pulse text-sm text-zinc-400">Coach is thinking...</p>}
           {error && <p className="text-sm text-red-400">{error}</p>}
         </div>
 
-        {explained && top && (
+        {showLine && top && (
           <div className="rounded bg-zinc-900 p-3">
             <div className="mb-1 text-xs text-zinc-500">Engine line</div>
             <div className="font-mono text-xs text-zinc-400">

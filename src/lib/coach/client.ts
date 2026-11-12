@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { buildUserMessage, SYSTEM_PROMPT } from "./prompt";
-import { COACH_REPLY_SCHEMA, type CoachReply, type CoachRequest, type CoachResponse } from "./schema";
+import { COACH_REPLY_SCHEMA, type CoachNotice, type CoachReply, type CoachRequest, type CoachResponse } from "./schema";
 import { decorateReply, fallbackReply, validateReply } from "./validate";
 import { ideaFeatures } from "@/lib/engine/ideas";
 import { judgeAttempt, type AttemptJudgement } from "./verdict";
@@ -37,13 +37,42 @@ async function callModel(messages: Anthropic.Beta.BetaMessageParam[]): Promise<C
  * position and the engine, regenerate once with the errors fed back, and fall
  * back to an engine-only reply if that fails too.
  */
-export async function generateCoachReply(req: CoachRequest): Promise<CoachResponse> {
+/**
+ * Map an API failure to a notice for the player. Budget: out of credit or past
+ * the workspace spend limit (Anthropic returns 400/402/403 with a billing message).
+ */
+export function classifyApiError(err: unknown): CoachNotice | null {
+  if (!(err instanceof Anthropic.APIError)) return null;
+  if (err.status === 429) return "rate-limited";
+  if (/credit|billing|spend|budget|quota/i.test(err.message)) return "budget";
+  if (err.status === 401 || err.status === 403 || err.status === undefined || err.status >= 500) return "unavailable";
+  return null;
+}
+
+function judgeAndFeatures(req: CoachRequest) {
   const judgement: AttemptJudgement | null =
     req.stage === "attempt" && req.attempt ? judgeAttempt(req.moment, req.attempt, req.attemptEvalCp) : null;
-  const features = ideaFeatures(req.moment);
+  return { judgement, features: ideaFeatures(req.moment) };
+}
+
+/** Engine-only reply without calling the model (rate limit hit, no key, or out of budget). */
+export function engineOnlyResponse(req: CoachRequest, notice: CoachNotice): CoachResponse {
+  const { judgement, features } = judgeAndFeatures(req);
+  return {
+    reply: decorateReply(fallbackReply(req, judgement, features), req, features),
+    source: "fallback",
+    notice,
+    attemptVerdict: judgement?.verdict ?? null,
+  };
+}
+
+export async function generateCoachReply(req: CoachRequest): Promise<CoachResponse> {
+  if (!process.env.ANTHROPIC_API_KEY) return engineOnlyResponse(req, "unavailable");
+  const { judgement, features } = judgeAndFeatures(req);
   const user = buildUserMessage(req, judgement, features);
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: user }];
   const allErrors: string[] = [];
+  let notice: CoachNotice | undefined;
 
   for (let attempt = 0; attempt < 2; attempt++) {
     let reply: CoachReply;
@@ -51,6 +80,7 @@ export async function generateCoachReply(req: CoachRequest): Promise<CoachRespon
       reply = await callModel(messages);
     } catch (err) {
       allErrors.push(err instanceof Error ? err.message : String(err));
+      notice = classifyApiError(err) ?? undefined;
       break;
     }
     const errors = validateReply(reply, req, judgement, features);
@@ -70,6 +100,7 @@ export async function generateCoachReply(req: CoachRequest): Promise<CoachRespon
   return {
     reply: fallbackReply(req, judgement, features),
     source: "fallback",
+    ...(notice ? { notice } : {}),
     attemptVerdict: judgement?.verdict ?? null,
     errors: allErrors,
   };

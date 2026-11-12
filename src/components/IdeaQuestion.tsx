@@ -120,7 +120,13 @@ export default function IdeaQuestion({ fen, orientation, label, logBase, onDone 
         )}
         {error && (
           <div className="text-sm text-red-400">
-            {error}{" "}
+            {error}
+            {(label.idea || label.opponentMotif) && (
+              <div className="mt-2 rounded border border-zinc-800 p-2 text-zinc-300">
+                {label.idea && <p>Idea: {label.idea}</p>}
+                {label.opponentMotif && <p>Opponent: {label.opponentMotif}</p>}
+              </div>
+            )}{" "}
             <button className="underline" onClick={() => onDone(null)}>
               Skip to the board
             </button>

@@ -90,13 +90,23 @@ export interface CoachRequest {
   attempt?: string;
   /** Eval of the attempt (user POV, cp) if the client analysed it and it wasn't in MultiPV. */
   attemptEvalCp?: number;
+  /** The engine's best line after the attempt (SAN, starting with the opponent's reply), when the client analysed it. */
+  attemptLine?: string[];
   history?: CoachTurn[];
 }
+
+export type CoachNotice = "rate-limited" | "budget" | "unavailable";
 
 export interface CoachResponse {
   reply: CoachReply;
   /** "llm" when the validated model reply is shown, "fallback" for the engine-only text. */
   source: "llm" | "fallback";
+  /**
+   * Why the coach is engine-only, when it isn't a validation failure:
+   * "rate-limited" (demo limit hit), "budget" (API key out of credit or spend cap),
+   * "unavailable" (no key, or the API is down).
+   */
+  notice?: CoachNotice;
   attemptVerdict: AttemptVerdict | null;
   /** Validation errors from the attempts that failed (for debugging / eval). */
   errors?: string[];
