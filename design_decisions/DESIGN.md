@@ -64,8 +64,15 @@ Models: Sonnet 5.5 as the coach (adaptive thinking, medium effort), Haiku 5.5 as
 `npm run eval` runs frozen cases from my own games through every rung:
 
 - 39 cases frozen from labelled moments.
-- Per rung: legality, leak checks, word caps, retry and fallback rates, plus a Haiku judge for "names the idea", "doesn't give it away", depth fits the rating, and no forced lines.
-- A leak test: Haiku guesses the move from the coach's hint, compared with guessing from the FEN alone. A hint should help, but not give the answer away.
+- Per rung, deterministic: legality, leak checks, word caps, and how often the first try passes, a retry is needed, or we fall back.
+- **Haiku judge** (rubric grader). For each reply it sees the position, the player's rating, the played move, the engine's best line and candidates, my label for the idea and the opponent's motif, and the rule for that rung. It returns four yes/no grades as JSON:
+  - *names the idea*: gets across the plan, threat or motif, not just a move or an eval (on early rungs it points toward the idea without giving the move)
+  - *giveaway*: on rungs before `move`, it gives away a good move by name, by piece plus square, or with an arrow
+  - *depth fits rating*: plain words under 1000, tactic named and a short line up to 1600, vocabulary and the long-term idea above that
+  - *forced style*: judges the person, opens with praise or filler, or pads past 3 points
+
+  The judge only scores replies for the eval report. It never decides move quality and never runs in the app.
+- **Leak guess**: Haiku sees the FEN, the legal moves and every hint shown so far, and guesses the best move. We compare its hit rate on each rung with a FEN-only baseline. The hit rate should go up slowly as the rungs go on and only reach the answer at `move`.
 - Idea grouping heuristic vs my labels: 19/22 (a move-order rule was tried and dropped; it scored 14/22).
 - Idea-explanation rubric (the spaced-repetition grading form) vs my hand grades: 31/32.
 
