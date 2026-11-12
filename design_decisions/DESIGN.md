@@ -6,7 +6,7 @@ A short tour of why the coach is built the way it is. The one idea behind all of
 
 1. Enter a Chess.com username. The server fetches the newest ~20 games (last two monthly archives) and the player's rating.
 2. Pick a game. Stockfish (WASM, in the browser) evaluates every ply at depth 10.
-3. The 1-3 critical moments become the lesson: the player's own moves with the biggest win-probability drop (>= 10 points), deduped within 2 moves, then re-analysed at depth 14 with MultiPV 3 plus the opponent's punishing reply.
+3. The 1-3 critical moments become the lesson: the player's own moves with the biggest win-probability drop (>= 10 percentage points), deduped within 2 moves, then re-analysed at depth 14 with MultiPV 3 plus the opponent's punishing reply.
 4. For each moment the player sees the position before their mistake and plays a move. The coach walks a hint ladder from there.
 
 Why win probability instead of raw centipawns: going from -8 to -12 in a lost game doesn't matter, going from +1 to -2 does. Why only the player's own moves and only 1-3 per game: the goal is the biggest bottleneck, not a full annotation, and a short list keeps cognitive load low.

@@ -273,7 +273,7 @@ export function fallbackReply(req: CoachRequest, judgement: AttemptJudgement | n
           ? `${req.attempt} is ${v === "best" ? "the engine's top choice" : "one of the engine's good moves"} here (eval ${ev(judgement?.evalCp ?? 0)}).`
           : v === "unknown"
             ? `${req.attempt} isn't one of the engine's top choices here; try another move or ask where to look.`
-            : `${req.attempt} loses about ${judgement?.wpLoss?.toFixed(0) ?? "?"} win-probability points compared with the best move.`;
+            : `${req.attempt} loses about ${judgement?.wpLoss?.toFixed(0) ?? "?"} win-probability percentage points compared with the best move.`;
       return { ...empty, text, moves: req.attempt ? [req.attempt] : [] };
     }
     case "focus":

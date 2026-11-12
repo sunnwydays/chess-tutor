@@ -192,7 +192,7 @@ export default function Lesson({ game, me, nextGame, onOpenGame }: Props) {
             <div className="flex flex-col gap-1.5">
               <Eyebrow>Clean game</Eyebrow>
               <h2 className="text-xl font-semibold text-fg">
-                {w.Subject} never dropped the win chance by 10 points or more.
+                {w.Subject} never dropped the win chance by 10% or more.
               </h2>
               <p className="max-w-prose text-sm text-fg-2">
                 Nothing to drill here. The fastest way to improve is to find a game that did have a turning point.

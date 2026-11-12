@@ -140,8 +140,8 @@ export default function FindMoment({ stream, logBase, onDone }: Props) {
             </Chip>
             <p className="text-fg-2">
               {answer
-                ? `The moment was ${label(answer.ply, answer.san)} (your win chance dropped ${stream.swing.toFixed(0)} points).`
-                : "Nothing here dropped your win chance by more than a few points."}
+                ? `The moment was ${label(answer.ply, answer.san)} (your win chance dropped ${stream.swing.toFixed(0)}%).`
+                : "Nothing here dropped your win chance by more than a few percent."}
             </p>
             <Button variant="primary" className="self-start" onClick={() => onDone(grade, pick!)}>
               {answer ? "Find the better move" : "Next"}
