@@ -229,7 +229,7 @@ async function judgeReply(c: EvalCase, stage: Stage, reply: CoachReply): Promise
     threat: "what the opponent threatens, drawn as red arrows; must not reveal the player's best move",
     piece: "which of the player's pieces should move (its square is highlighted); must not reveal where it goes",
     move: "name the best move and the idea behind it",
-    explain: "the full picture: why the best move works, what the played move allowed, the line, the motif",
+    explain: "the full picture: why the best move works, what the played move allowed, the line, the motif, and a required moment-type line (many-roads: the shared idea; multi-idea: each idea in a few words)",
   };
   const prompt = `You are grading one reply from a chess coach. The coach walks a player through a critical moment with a hint ladder (attempt -> focus -> threat -> piece -> move -> explain).
 
@@ -249,7 +249,7 @@ Grade:
 - namesIdea: does the reply convey the idea of the position (the plan, threat or motif), not just a move or an eval? At the early rungs, "names the idea" means it points toward the idea without revealing the move.
 - giveaway: at attempt/focus/threat/piece, does it reveal the best move or a near-best candidate (by name, by piece plus destination square, or by an arrow)? At move/explain always false.
 - depthFitsRating: under 1000 = plain words, one concrete idea, no jargon; 1000-1600 = tactic named, short line; above 1600 = vocabulary and the long-term idea. Is the depth right for ${c.player.rating}?
-- forcedStyle: does it grade the person ("careless", "obvious", "you missed"), open with praise or filler, or pad with more than 3 points?
+- forcedStyle: does it grade the person ("careless", "obvious", "you missed"), open with praise or filler, or pad with more than 3 points? At explain the moment-type line listing the ideas is required: it is not padding.
 - note: one sentence.`;
   const res = await client().messages.create({
     model: JUDGE_MODEL,
