@@ -1,5 +1,5 @@
 import { Chess } from "chess.js";
-import { hiddenPieces, isOpponentThreat, type IdeaFeatures } from "@/lib/engine/ideas";
+import { flipTurn, hiddenPieces, isOpponentThreat, type IdeaFeatures } from "@/lib/engine/ideas";
 import type { CoachReply, CoachRequest, Stage } from "./schema";
 import { goodCandidates, normSan } from "./verdict";
 import type { AttemptJudgement } from "./verdict";
@@ -14,14 +14,28 @@ const PERSON_RE = /\b(careless|sloppy|lazy|obvious(ly)?|silly|you (missed|should
 const MAX_POINTS = 3;
 
 /** Length caps per rung: words, and sentences where the rung is "N sentences". */
+/**
+ * Hard caps per rung. The prompt asks for less (focus 12, threat/piece 20):
+ * the model overshoots a stated cap by 1-8 words, and every miss costs a retry.
+ */
 export const CAPS: Record<Stage, { words: number; sentences?: number }> = {
   attempt: { words: 35, sentences: 1 },
-  focus: { words: 15 },
-  threat: { words: 25 },
-  piece: { words: 25 },
+  focus: { words: 18 },
+  threat: { words: 30 },
+  piece: { words: 30 },
   move: { words: 45, sentences: 2 },
   explain: { words: 80 },
 };
+
+/** For the retry message: what the opponent can actually play from a square. */
+function opponentMovesFrom(fen: string, from: string): string {
+  try {
+    const moves = new Chess(flipTurn(fen)).moves({ square: from as never, verbose: true });
+    return moves.length ? `their legal moves from ${from}: ${moves.map((m) => `${m.from}-${m.to}`).join(" ")}` : `they have no movable piece on ${from}`;
+  } catch {
+    return "pick from Opponent threats in <engine>";
+  }
+}
 
 function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -111,7 +125,7 @@ export function validateReply(
   // 3. Arrows must be real moves: "move" arrows legal for the player, "threat" arrows legal for the opponent.
   for (const a of reply.arrows) {
     if (a.kind === "threat" && !isOpponentThreat(moment.fenBefore, a.from, a.to)) {
-      errors.push(`arrows: threat ${a.from}-${a.to} is not a move the opponent could play here`);
+      errors.push(`arrows: threat ${a.from}-${a.to} is not a move the opponent could play here (${opponentMovesFrom(moment.fenBefore, a.from)})`);
     }
     if (a.kind === "move" && !chess.moves({ verbose: true }).some((mv) => mv.from === a.from && mv.to === a.to)) {
       errors.push(`arrows: move ${a.from}-${a.to} is not a legal move here`);
