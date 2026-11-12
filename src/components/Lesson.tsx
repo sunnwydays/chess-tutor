@@ -5,6 +5,7 @@ import GameViewer from "./GameViewer";
 import MomentPanel, { type LadderEnd } from "./MomentPanel";
 import type { MomentAnalysis } from "@/lib/engine/types";
 import { enqueueMoment } from "@/lib/review/feed";
+import { solvedCold } from "@/lib/review/session";
 import type { GameContext } from "@/lib/coach/schema";
 import { useGameAnalysis } from "@/lib/engine/useGameAnalysis";
 import { who } from "@/lib/me";
@@ -53,8 +54,8 @@ export default function Lesson({ game, me, nextGame, onOpenGame }: Props) {
   const w = who(me);
 
   function onEnd(m: MomentAnalysis, end: LadderEnd) {
-    // Found it cold: nothing to review. Any hint or a shown move -> queue it.
-    if (end.solved && end.hintsTaken === 0) return;
+    // Found it cold (first try, no hints): nothing to review. Anything else -> queue it.
+    if (solvedCold(end)) return;
     enqueueMoment({ id: `${game.id}-${m.ply}`, gameId: game.id, game: ctx, moment: m, rating }, end.motif);
     setQueued((q) => ({ ...q, [m.ply]: true }));
   }

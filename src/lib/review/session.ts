@@ -39,7 +39,14 @@ export interface LadderOutcome {
   solved: boolean;
   /** Rungs taken (focus..explain); a give-up counts as the move rung. */
   hintsTaken: number;
+  /** Wrong moves played before the end (not counting the solving move). */
+  wrongAttempts?: number;
   msToFirstAttempt: number;
+}
+
+/** Found on the first try with no hints: the only outcome that counts as "no help". */
+export function solvedCold(o: LadderOutcome | null | undefined): boolean {
+  return !!o?.solved && o.hintsTaken === 0 && !o.wrongAttempts;
 }
 
 export interface RepInput {
@@ -56,7 +63,7 @@ export const MEMORIZED_MS = 5000;
 /**
  * Finished rep -> queue rep. Form A correct = right-idea; Form B correct =
  * noticed, else missed. Otherwise the ladder decides: right-move only when
- * found with no hints.
+ * found on the first try with no hints.
  */
 export function toRep(r: RepInput): Omit<ReviewRep, "at"> {
   const hintsTaken = r.ladder?.hintsTaken ?? 0;
@@ -64,7 +71,7 @@ export function toRep(r: RepInput): Omit<ReviewRep, "at"> {
   let verdict: ReviewRep["verdict"];
   if (r.findGrade !== undefined) verdict = r.findGrade === "correct" ? "noticed" : "missed";
   else if (r.ideaGrade === "correct") verdict = "right-idea";
-  else verdict = r.ladder?.solved && hintsTaken === 0 ? "right-move" : "wrong";
+  else verdict = solvedCold(r.ladder) ? "right-move" : "wrong";
   const success = verdict !== "wrong" && verdict !== "missed";
   return {
     positionKind: r.positionKind,

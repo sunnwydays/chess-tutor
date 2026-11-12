@@ -35,6 +35,7 @@ describe("toRep", () => {
   it("right-move only with zero hints", () => {
     expect(toRep({ startLevel: 4, positionKind: "sibling", ladder: { solved: true, hintsTaken: 0, msToFirstAttempt: 8000 } }).verdict).toBe("right-move");
     expect(toRep({ startLevel: 4, positionKind: "sibling", ladder: { solved: true, hintsTaken: 1, msToFirstAttempt: 8000 } }).verdict).toBe("wrong");
+    expect(toRep({ startLevel: 4, positionKind: "sibling", ladder: { solved: true, hintsTaken: 0, wrongAttempts: 2, msToFirstAttempt: 8000 } }).verdict).toBe("wrong");
   });
   it("forms set the verdict and grade = level + hints", () => {
     const a = toRep({ startLevel: 1, positionKind: "original", ideaGrade: "correct", ladder: { solved: true, hintsTaken: 0, msToFirstAttempt: 8000 } });

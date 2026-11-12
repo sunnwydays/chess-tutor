@@ -27,7 +27,7 @@ import {
   type ReviewItem,
 } from "@/lib/review/queue";
 import { ladderLevelFor, type RubricGrade } from "@/lib/review/rubric";
-import { ladderAfterFind, levelFor, toRep, type Level } from "@/lib/review/session";
+import { ladderAfterFind, levelFor, solvedCold, toRep, type Level } from "@/lib/review/session";
 import {
   fromRecord,
   loadLabels,
@@ -41,6 +41,15 @@ import { buildStream, type Stream, type StreamGrade } from "@/lib/review/streams
 
 const SESSION_LEN = 4;
 const DAY = 24 * 60 * 60 * 1000;
+
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
+
+/** "with 2 hints", "after 1 wrong try", "with 1 hint after 2 wrong tries". */
+function solvedHow(hints: number, wrong: number): string {
+  const tries = wrong === 1 ? "1 wrong try" : `${wrong} wrong tries`;
+  if (hints && wrong) return `with ${plural(hints, "hint")} after ${tries}`;
+  return hints ? `with ${plural(hints, "hint")}` : `after ${tries}`;
+}
 
 type Rep =
   | { kind: "item"; item: ReviewItem; pos: ReviewItem["positions"][number]; src: ReviewSource; level: Level; stream: Stream | null }
@@ -377,10 +386,10 @@ function RepView({
       {end && (
         <Card className="flex animate-fade-up flex-col items-start gap-3 p-5 text-sm">
           <p className="text-base text-fg">
-            {end.solved && end.hintsTaken === 0
-              ? "Found it with no hints. It comes back later with less help."
+            {solvedCold(end)
+              ? "Found it first try with no hints. It comes back later with less help."
               : end.solved
-                ? `Solved with ${end.hintsTaken} hint${end.hintsTaken === 1 ? "" : "s"}. This position comes back sooner, with a bit more help.`
+                ? `Solved ${solvedHow(end.hintsTaken, end.wrongAttempts ?? 0)}. This position comes back sooner, with a bit more help.`
                 : "Answer shown. This position comes back sooner, with a bit more help."}
           </p>
           {label?.idea && (

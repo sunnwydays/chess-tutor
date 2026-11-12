@@ -291,9 +291,11 @@ export default function MomentPanel({
       const solvedNow = stage === "attempt" && (data.attemptVerdict === "best" || data.attemptVerdict === "good");
       if (!ended.current && (solvedNow || stage === "move")) {
         ended.current = true;
+        const attempts = next.filter((e) => e.stage === "attempt").length;
         const end: LadderEnd = {
           solved: solvedNow,
           hintsTaken,
+          wrongAttempts: solvedNow ? attempts - 1 : attempts,
           msToFirstAttempt: firstAttemptMs.current ?? 0,
           motif: next.map((e) => e.response.reply.motif).filter(Boolean).pop() ?? "",
         };
