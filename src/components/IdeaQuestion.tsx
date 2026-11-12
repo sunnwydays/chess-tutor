@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import { logEvent, type LogEventInput } from "@/lib/log";
 import type { RubricGrade, RubricLabel, RubricScores } from "@/lib/review/rubric";
+import { Button, Card, Chip, Eyebrow } from "./ui";
 
 const Board = dynamic(() => import("./Board"), { ssr: false });
 
@@ -22,10 +23,10 @@ interface GradeResponse {
   followUp: string | null;
 }
 
-const GRADE_UI: Record<RubricGrade, { label: string; cls: string }> = {
-  correct: { label: "Correct", cls: "bg-emerald-700 text-white" },
-  "missing-details": { label: "Missing details", cls: "bg-amber-600 text-white" },
-  incorrect: { label: "Not quite", cls: "bg-red-700 text-white" },
+const GRADE_UI: Record<RubricGrade, { label: string; tone: "accent" | "amber" | "danger" }> = {
+  correct: { label: "Correct", tone: "accent" },
+  "missing-details": { label: "Missing details", tone: "amber" },
+  incorrect: { label: "Not quite", tone: "danger" },
 };
 
 /**
@@ -75,28 +76,31 @@ export default function IdeaQuestion({ fen, orientation, label, logBase, onDone 
   const question = turns.length === 0 ? "What's the plan here? In a line: the idea, where on the board, and what your opponent is up to." : last.res.followUp;
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row">
-      <div className="w-full max-w-[520px]">
+    <div className="flex flex-col gap-6 lg:flex-row">
+      <div className="w-full lg:w-[560px] lg:shrink-0">
         <Board fen={fen} orientation={orientation} />
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
-        <h2 className="text-lg font-medium">Explain the idea</h2>
-        <p className="text-sm text-zinc-500">No move this time. Words only; the board comes after.</p>
+      <div className="flex min-w-0 flex-1 flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <Eyebrow>Review exercise</Eyebrow>
+          <h2 className="text-xl font-semibold text-fg">Explain the idea</h2>
+          <p className="text-sm text-muted">No move this time. Words only; the board comes after.</p>
+        </div>
 
         {turns.map((t, i) => (
-          <div key={i} className="rounded border border-zinc-800 p-3 text-sm">
-            <p className="text-zinc-300">&ldquo;{t.answer}&rdquo;</p>
-            <span className={`mt-2 inline-block rounded px-2 py-0.5 text-xs ${GRADE_UI[t.res.grade].cls}`}>
+          <Card key={i} className="flex flex-col gap-2 p-4 text-sm">
+            <p className="text-fg-2">&ldquo;{t.answer}&rdquo;</p>
+            <Chip tone={GRADE_UI[t.res.grade].tone} className="self-start">
               {GRADE_UI[t.res.grade].label}
-            </span>
-          </div>
+            </Chip>
+          </Card>
         ))}
 
         {!finished && (
           <>
-            <p className="text-sm text-zinc-200">{question}</p>
+            <p className="text-sm text-fg">{question}</p>
             <textarea
-              className="min-h-[4rem] rounded border border-zinc-700 bg-zinc-900 p-2 text-sm"
+              className="min-h-[5rem] rounded-xl border border-line bg-surface-2 p-3 text-sm text-fg placeholder:text-muted focus:border-accent focus:outline-none disabled:opacity-60"
               placeholder="e.g. trade off the defender of e5, then my queen hits g7"
               value={answer}
               maxLength={600}
@@ -109,36 +113,29 @@ export default function IdeaQuestion({ fen, orientation, label, logBase, onDone 
               }}
               disabled={loading}
             />
-            <button
-              className="self-start rounded bg-emerald-700 px-3 py-1 text-sm hover:bg-emerald-600 disabled:opacity-40"
-              disabled={loading || !answer.trim()}
-              onClick={() => void submit()}
-            >
+            <Button variant="primary" className="self-start" disabled={loading || !answer.trim()} onClick={() => void submit()}>
               {loading ? "Grading..." : "Submit"}
-            </button>
+            </Button>
           </>
         )}
         {error && (
-          <div className="text-sm text-red-400">
+          <div className="flex flex-col gap-3 text-sm text-danger">
             {error}
             {(label.idea || label.opponentMotif) && (
-              <div className="mt-2 rounded border border-zinc-800 p-2 text-zinc-300">
+              <Card className="p-3 text-fg-2">
                 {label.idea && <p>Idea: {label.idea}</p>}
                 {label.opponentMotif && <p>Opponent: {label.opponentMotif}</p>}
-              </div>
-            )}{" "}
-            <button className="underline" onClick={() => onDone(null)}>
+              </Card>
+            )}
+            <Button size="sm" className="self-start" onClick={() => onDone(null)}>
               Skip to the board
-            </button>
+            </Button>
           </div>
         )}
         {finished && (
-          <button
-            className="self-start rounded bg-emerald-700 px-3 py-1 text-sm hover:bg-emerald-600"
-            onClick={() => onDone(last.res.grade)}
-          >
+          <Button variant="primary" className="self-start" onClick={() => onDone(last.res.grade)}>
             Now find the move
-          </button>
+          </Button>
         )}
       </div>
     </div>

@@ -7,12 +7,13 @@
  * 5/4 full ladder, 2 attempt only, 1 explain the idea (Form A), 0 find the
  * moment (Form B). See design_decisions/SPACED_REPETITION.md.
  */
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import FindMoment from "@/components/FindMoment";
 import IdeaQuestion from "@/components/IdeaQuestion";
 import MomentPanel, { type LadderEnd } from "@/components/MomentPanel";
+import { Button, Card, Chip, Eyebrow, Reveal, cx } from "@/components/ui";
 import { logEvent } from "@/lib/log";
+import { isMe } from "@/lib/me";
 import { momentKind, type MomentLabel, type MomentRecord } from "@/lib/moments";
 import {
   createItem,
@@ -57,20 +58,6 @@ const LEVEL_NAME: Record<Level, string> = {
 };
 const KIND_NAME = { original: "your original position", sibling: "a different game, same idea", perturbed: "same position, colors swapped" };
 
-function contextLine(src: ReviewSource): string {
-  const { moves } = src.game;
-  const end = src.moment.ply - 1;
-  const start = Math.max(0, end - 6);
-  return moves
-    .slice(start, end)
-    .map((san, k) => {
-      const ply = start + k + 1;
-      const n = Math.ceil(ply / 2);
-      return ply % 2 === 1 ? `${n}. ${san}` : k === 0 ? `${n}... ${san}` : san;
-    })
-    .join(" ");
-}
-
 export default function ReviewPage() {
   const [queue, setQueue] = useState<QueueState | null>(null);
   const [records, setRecords] = useState<MomentRecord[]>([]);
@@ -105,7 +92,7 @@ export default function ReviewPage() {
     setQueue(next);
   }
 
-  if (!queue) return <main className="p-6 text-zinc-400">Loading...</main>;
+  if (!queue) return <p className="text-muted">Loading...</p>;
   const due = dueCount(queue.items, queue.clock);
   const pending = queue.items.filter((it) => it.box < 3).length;
   const graduated = queue.items.length - pending;
@@ -187,74 +174,100 @@ export default function ReviewPage() {
     setRep(nextRep(q, s));
   }
 
-  const btn = "rounded bg-zinc-800 px-3 py-1 text-sm hover:bg-zinc-700 disabled:opacity-40";
+  const stats: { label: string; value: string | number; sub?: string }[] = [
+    { label: "Day", value: day, sub: new Date(queue.clock).toLocaleDateString() },
+    { label: "Due", value: due },
+    { label: "In queue", value: pending },
+    { label: "Learned", value: graduated },
+  ];
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-4 p-6">
-      <div className="flex flex-wrap items-baseline gap-3">
-        <h1 className="text-2xl font-semibold">Review</h1>
-        <Link href="/" className="text-sm text-zinc-500 hover:text-emerald-400">
-          Lessons
-        </Link>
-        <Link href="/label" className="text-sm text-zinc-500 hover:text-emerald-400">
-          Label moments
-        </Link>
+    <div className="flex flex-col gap-8">
+      <Reveal>
+        <div className="flex flex-col gap-2">
+          <Eyebrow>Spaced repetition</Eyebrow>
+          <h1 className="text-3xl font-semibold tracking-tight text-fg">Review</h1>
+          <p className="max-w-prose text-fg-2">
+            Positions you needed hints on come back with less help each time, until you see them cold.
+          </p>
+        </div>
+      </Reveal>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {stats.map((s, i) => (
+          <Reveal key={s.label} delay={i * 40}>
+            <Card className="p-4">
+              <div className="text-xs text-muted">{s.label}</div>
+              <div className="mt-1 text-2xl font-semibold tabular-nums text-fg">{s.value}</div>
+              {s.sub && <div className="mt-0.5 text-xs text-muted">{s.sub}</div>}
+            </Card>
+          </Reveal>
+        ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 rounded border border-zinc-800 p-3 text-sm">
-        <span className="text-zinc-300">
-          Day {day} ({new Date(queue.clock).toLocaleDateString()})
-        </span>
-        <span className="text-zinc-400">
-          {due} due | {pending} in queue | {graduated} learned
-        </span>
-        <button className={btn} disabled={due > 0 || pending === 0} onClick={skip} title="Advance the virtual clock to the next due date">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button disabled={due > 0 || pending === 0} onClick={skip} title="Advance the virtual clock to the next due date">
           Skip to the future
-        </button>
-        <button className={btn} onClick={seed} disabled={!records.length}>
+        </Button>
+        <Button onClick={seed} disabled={!records.length}>
           Add my labelled moments
-        </button>
-        <button className="ml-auto text-xs text-zinc-500 underline hover:text-zinc-300" onClick={reset}>
-          reset
-        </button>
+        </Button>
+        <Button variant="ghost" className="ml-auto text-muted hover:text-danger" onClick={reset}>
+          Reset
+        </Button>
       </div>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       {!sessionOn && (
-        <div className="flex flex-col gap-2 text-sm text-zinc-300">
-          {queue.items.length === 0 ? (
-            <p>
-              Nothing queued yet. Moments you needed hints on in a lesson land here, or add your labelled moments.
+        <Reveal>
+          <Card className="flex flex-col items-start gap-4 p-6">
+            <p className="max-w-prose text-fg-2">
+              {queue.items.length === 0
+                ? "Nothing queued yet. Moments you needed hints on in a lesson land here, or add your labelled moments."
+                : due === 0
+                  ? "Nothing due today. Skip to the future to see the next reps."
+                  : `${due} due. A session is up to ${SESSION_LEN} reps; each starts with less help than the last time you saw the idea.`}
             </p>
-          ) : due === 0 ? (
-            <p>Nothing due today. Skip to the future to see the next reps.</p>
-          ) : (
-            <p>
-              {due} due. A session is up to {SESSION_LEN} reps; each starts with less help than the last time you saw the idea.
-            </p>
-          )}
-          <button className="self-start rounded bg-emerald-700 px-4 py-1.5 hover:bg-emerald-600 disabled:opacity-40" disabled={due === 0} onClick={start}>
-            Start session
-          </button>
-        </div>
+            <Button variant="primary" size="lg" disabled={due === 0} onClick={start}>
+              Start session
+            </Button>
+          </Card>
+        </Reveal>
       )}
 
       {sessionOn && !rep && (
-        <div className="flex flex-col gap-2 text-sm text-zinc-300">
-          <p>Session done: {served.length} reps.</p>
-          <button className={`${btn} self-start`} onClick={() => setSessionOn(false)}>
-            Back
-          </button>
-        </div>
+        <Reveal>
+          <Card className="flex flex-col items-start gap-4 p-6">
+            <div className="flex flex-col gap-1.5">
+              <Eyebrow>Session done</Eyebrow>
+              <h2 className="text-xl font-semibold text-fg">
+                {served.length} rep{served.length === 1 ? "" : "s"} done
+              </h2>
+            </div>
+            <Button onClick={() => setSessionOn(false)}>Back</Button>
+          </Card>
+        </Reveal>
       )}
 
       {sessionOn && rep && (
-        <section className="flex flex-col gap-2">
-          <p className="text-xs text-zinc-500">
-            Rep {served.length + 1} of up to {SESSION_LEN}
-            {" | "}
-            {rep.kind === "control" ? "Level 0: find the moment" : `${LEVEL_NAME[rep.level]} | ${KIND_NAME[rep.pos.kind]}`}
-          </p>
+        <section className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex gap-1" aria-hidden>
+                {Array.from({ length: SESSION_LEN }, (_, k) => (
+                  <span
+                    key={k}
+                    className={cx("h-1 w-7 rounded-full", k <= served.length ? "bg-accent" : "bg-surface-3")}
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-fg-2">
+                Rep {served.length + 1} of {SESSION_LEN}
+              </span>
+            </div>
+            <Chip tone="info">{rep.kind === "control" ? "Level 0: find the moment" : LEVEL_NAME[rep.level]}</Chip>
+            {rep.kind === "item" && <Chip>{KIND_NAME[rep.pos.kind]}</Chip>}
+          </div>
           {rep.kind === "control" ? (
             <FindMoment
               key={`control-${served.length}`}
@@ -263,25 +276,41 @@ export default function ReviewPage() {
               onDone={(g) => finish({ ladder: null, findGrade: g })}
             />
           ) : (
-            <RepView key={`${rep.item.id}-${served.length}`} rep={rep} labels={labels} clock={queue.clock} onFinish={finish} />
+            <RepView
+              key={`${rep.item.id}-${served.length}`}
+              rep={rep}
+              labels={labels}
+              clock={queue.clock}
+              me={isMe(rep.src.game[rep.src.game.userColor].username)}
+              onFinish={finish}
+            />
           )}
         </section>
       )}
 
       {queue.items.length > 0 && (
-        <details className="text-xs text-zinc-500">
-          <summary className="cursor-pointer">Queue</summary>
-          <ul className="mt-2 space-y-1">
+        <details className="group rounded-card border border-line bg-surface">
+          <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm text-fg-2 hover:text-fg">
+            <span>Queue ({queue.items.length})</span>
+            <span className="text-xs text-muted transition-transform group-open:rotate-90" aria-hidden>
+              &rsaquo;
+            </span>
+          </summary>
+          <ul className="divide-y divide-line border-t border-line font-mono text-xs">
             {queue.items.map((it) => (
-              <li key={it.id}>
-                {it.id} | {it.ideaTag} | box {it.box}
-                {it.box < 3 ? ` | due ${new Date(it.dueAt).toLocaleDateString()}` : " | learned"} | {it.history.length} reps
+              <li key={it.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-fg-2">
+                <span className="min-w-0 flex-1 truncate">{it.id}</span>
+                <span className="text-muted">{it.ideaTag}</span>
+                <Chip tone={it.box < 3 ? "neutral" : "accent"}>box {it.box}</Chip>
+                <span className="text-muted">
+                  {it.box < 3 ? `due ${new Date(it.dueAt).toLocaleDateString()}` : "learned"} · {it.history.length} reps
+                </span>
               </li>
             ))}
           </ul>
         </details>
       )}
-    </main>
+    </div>
   );
 }
 
@@ -292,11 +321,13 @@ function RepView({
   rep,
   labels,
   clock,
+  me,
   onFinish,
 }: {
   rep: Item;
   labels: Record<string, MomentLabel>;
   clock: number;
+  me: boolean;
   onFinish: (r: { ladder: LadderEnd | null; ideaGrade?: RubricGrade; findGrade?: StreamGrade }) => void;
 }) {
   const { src, pos, item, level } = rep;
@@ -342,14 +373,14 @@ function RepView({
         player={{ rating: src.rating }}
         level={ladderLevel}
         mode="review"
-        hideResult
-        context={level === 5 ? contextLine(src) : undefined}
+        me={me}
+        leadUp={level === 5}
         logBase={logBase}
         onEnd={setEnd}
       />
       {end && (
-        <div className="flex flex-col gap-2 rounded border border-zinc-800 p-3 text-sm">
-          <p className="text-zinc-300">
+        <Card className="flex animate-fade-up flex-col items-start gap-3 p-5 text-sm">
+          <p className="text-base text-fg">
             {end.solved && end.hintsTaken === 0
               ? "Found it with no hints. It comes back later with less help."
               : end.solved
@@ -357,15 +388,15 @@ function RepView({
                 : "Answer shown. This position comes back sooner, with a bit more help."}
           </p>
           {label?.idea && (
-            <p className="text-zinc-400">
-              Your note on this idea: <i>{label.idea}</i>
+            <p className="text-fg-2 italic">
+              Your note on this idea: {label.idea}
               {label.opponentMotif ? ` / opponent: ${label.opponentMotif}` : ""}
             </p>
           )}
-          <button className="self-start rounded bg-emerald-700 px-3 py-1 hover:bg-emerald-600" onClick={() => onFinish({ ladder: end, ...form })}>
+          <Button variant="primary" onClick={() => onFinish({ ladder: end, ...form })}>
             Next rep
-          </button>
-        </div>
+          </Button>
+        </Card>
       )}
     </div>
   );

@@ -58,9 +58,9 @@ const MOMENT_TYPE_HELP: Record<string, string> = {
 };
 const GROUP_COLORS: Record<string, string> = { A: "#22c55e", B: "#3b82f6", C: "#a855f7" };
 
-const btn = "rounded bg-zinc-800 px-3 py-1 text-sm hover:bg-zinc-700 disabled:opacity-40";
+const btn = "rounded-lg border border-line bg-surface-2 px-3 py-1 text-sm text-fg hover:border-line-strong hover:bg-surface-3 disabled:opacity-40";
 const chip = (on: boolean) =>
-  `rounded-full border px-3 py-1 text-sm ${on ? "border-emerald-500 bg-emerald-900/50" : "border-zinc-700 hover:bg-zinc-800"}`;
+  `rounded-full border px-3 py-1 text-sm ${on ? "border-accent bg-accent/15 text-accent" : "border-line-strong text-fg-2 hover:bg-surface-2"}`;
 
 export default function LabelPage() {
   const [records, setRecords] = useState<MomentRecord[] | null>(null);
@@ -144,8 +144,8 @@ export default function LabelPage() {
     return { fen: chess.fen(), arrows: arrow ? [arrow] : [], caption: `Punish line: ${punishPv.slice(0, off).join(" ")}`, maxOffset, off };
   }, [rec, offset]);
 
-  if (error) return <main className="p-6 text-red-400">{error}</main>;
-  if (!records || !rec || !view) return <main className="p-6 text-zinc-400">Loading moments...</main>;
+  if (error) return <main className="p-6 text-danger">{error}</main>;
+  if (!records || !rec || !view) return <main className="p-6 text-muted">Loading moments...</main>;
 
   const m = rec.moment;
   const g = rec.game;
@@ -189,7 +189,7 @@ export default function LabelPage() {
     <main className="mx-auto flex max-w-5xl flex-col gap-4 p-6">
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-xl font-semibold">Label moments</h1>
-        <span className="text-sm text-zinc-400">
+        <span className="text-sm text-muted">
           {idx + 1} / {records.length} | labeled {labeled}
         </span>
         <button className={btn} onClick={() => go(idx - 1)} disabled={idx === 0}>
@@ -198,13 +198,13 @@ export default function LabelPage() {
         <button className={btn} onClick={() => go(idx + 1)} disabled={idx === records.length - 1}>
           Next (n)
         </button>
-        <button className={`${btn} ml-auto bg-emerald-800 hover:bg-emerald-700`} onClick={copy}>
+        <button className={`${btn} ml-auto bg-accent text-accent-ink font-semibold hover:bg-accent-strong`} onClick={copy}>
           {copied ? "Copied" : "Copy labels as JSON"}
         </button>
       </div>
 
-      <p className="text-sm text-zinc-300">
-        <a href={g.url} target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">
+      <p className="text-sm text-fg-2">
+        <a href={g.url} target="_blank" rel="noreferrer" className="text-accent hover:underline">
           Game {g.id}
         </a>
         {" | "}
@@ -216,11 +216,11 @@ export default function LabelPage() {
         <div className="flex flex-col gap-4 md:flex-row">
           <div className="w-full max-w-[480px]">
             <Board fen={rec.moment.fenBefore} orientation={g.userColor} />
-            <p className="mt-1 text-center text-xs text-zinc-500">Before: {context || "(start)"}</p>
+            <p className="mt-1 text-center text-xs text-muted">Before: {context || "(start)"}</p>
           </div>
-          <div className="flex flex-1 flex-col gap-3 rounded border border-zinc-800 p-3 text-sm">
-            <p className="text-zinc-400">Control position (move {moveNo}{dots}, your turn). Engine hidden.</p>
-            <p className="font-semibold text-zinc-200">Does this look critical to you?</p>
+          <div className="flex flex-1 flex-col gap-3 rounded-card border border-line bg-surface p-3 text-sm">
+            <p className="text-muted">Control position (move {moveNo}{dots}, your turn). Engine hidden.</p>
+            <p className="font-semibold text-fg">Does this look critical to you?</p>
             <div className="flex gap-2">
               {(["yes", "no"] as const).map((v) => (
                 <button key={v} className={chip(label.looksCritical === v)} onClick={() => {
@@ -241,29 +241,29 @@ export default function LabelPage() {
             <button className={btn} onClick={() => setOffset((o) => Math.max(-CONTEXT_PLIES, o - 1))} disabled={view.off <= -CONTEXT_PLIES}>
               &larr;
             </button>
-            <span className="min-w-[14rem] text-center text-sm text-zinc-300">{view.caption}</span>
+            <span className="min-w-[14rem] text-center text-sm text-fg-2">{view.caption}</span>
             <button className={btn} onClick={() => setOffset((o) => o + 1)} disabled={view.off >= view.maxOffset}>
               &rarr;
             </button>
           </div>
-          <p className="mt-1 text-center text-xs text-zinc-500">Before: {context || "(start)"}</p>
+          <p className="mt-1 text-center text-xs text-muted">Before: {context || "(start)"}</p>
         </div>
 
         <div className="flex flex-1 flex-col gap-3">
-          <div className="rounded border border-zinc-800 p-3 text-sm">
+          <div className="rounded-card border border-line bg-surface p-3 text-sm">
             <p>
               Move {moveNo}
               {dots} <b>{m.played}</b>: win chance {m.winProbBefore.toFixed(0)}% &rarr; {m.winProbAfter.toFixed(0)}% (eval {cpText(m.evalBefore)} &rarr; {cpText(m.evalAfter)})
             </p>
-            <p className="mt-3 mb-1 font-semibold text-zinc-200">1. Before the engine</p>
-            <p className="mb-1 text-zinc-400">What would you play now, and why? One line. Don&apos;t edit it after seeing the engine.</p>
+            <p className="mt-3 mb-1 font-semibold text-fg">1. Before the engine</p>
+            <p className="mb-1 text-muted">What would you play now, and why? One line. Don&apos;t edit it after seeing the engine.</p>
             <input
-              className="w-full rounded border border-zinc-700 bg-zinc-900 p-2"
+              className="w-full rounded-xl border border-line bg-surface-2 text-fg focus:border-accent focus:outline-none p-2"
               placeholder="e.g. Nf3, develops and covers e5"
               value={label.guess ?? ""}
               onChange={(e) => save({ guess: e.target.value })}
             />
-            <p className="mt-3 mb-1 text-zinc-400">Did you sense the move was bad when you played it? A guess is fine.</p>
+            <p className="mt-3 mb-1 text-muted">Did you sense the move was bad when you played it? A guess is fine.</p>
             <div className="flex flex-wrap gap-2">
               {(["knew", "suspected", "felt-fine", "no-idea"] as const).map((a) => (
                 <button key={a} className={chip(label.awareness === a)} onClick={() => save({ awareness: a })}>
@@ -271,12 +271,12 @@ export default function LabelPage() {
                 </button>
               ))}
             </div>
-            <p className="mt-3 mb-1 font-semibold text-zinc-200">2. Then show the engine and fill in the rest</p>
+            <p className="mt-3 mb-1 font-semibold text-fg">2. Then show the engine and fill in the rest</p>
             <button className={btn} onClick={() => setShowEngine((s) => !s)}>
               {showEngine ? "Hide engine" : "Show engine"}
             </button>
             {showEngine && (
-              <ul className="mt-2 space-y-1 text-zinc-300">
+              <ul className="mt-2 space-y-1 text-fg-2">
                 {m.lines.map((l, i) => {
                   const grp = label.lineGroups?.[l.move] ?? "A";
                   return (
@@ -295,9 +295,9 @@ export default function LabelPage() {
                     </li>
                   );
                 })}
-                <li className="text-xs text-zinc-500">Same letter = same idea. Click the letter to change it.</li>
+                <li className="text-xs text-muted">Same letter = same idea. Click the letter to change it.</li>
                 {m.punish && (
-                  <li className="text-red-300">
+                  <li className="text-danger">
                     Punish: {m.punish.pv.slice(0, 8).join(" ")} ({cpText(m.punish.evalCp)})
                   </li>
                 )}
@@ -305,9 +305,9 @@ export default function LabelPage() {
             )}
           </div>
 
-          <div className="flex flex-col gap-3 rounded border border-zinc-800 p-3 text-sm">
+          <div className="flex flex-col gap-3 rounded-card border border-line bg-surface p-3 text-sm">
             <div>
-              <p className="mb-1 text-zinc-400">What was going on?</p>
+              <p className="mb-1 text-muted">What was going on?</p>
               <div className="flex flex-wrap gap-2">
                 {LABEL_TAGS.map((t) => {
                   const on = label.tags.includes(t);
@@ -320,7 +320,7 @@ export default function LabelPage() {
               </div>
             </div>
             <div>
-              <p className="mb-1 text-zinc-400">Moment type</p>
+              <p className="mb-1 text-muted">Moment type</p>
               <div className="flex flex-wrap gap-2">
                 {MOMENT_TYPES.map((t) => (
                   <button key={t} className={chip(label.momentType === t)} onClick={() => save({ momentType: t })} title={MOMENT_TYPE_HELP[t]}>
@@ -330,24 +330,24 @@ export default function LabelPage() {
               </div>
             </div>
             <div>
-              <p className="mb-1 text-zinc-400">The idea the good engine lines share, a few words.</p>
+              <p className="mb-1 text-muted">The idea the good engine lines share, a few words.</p>
               <input
-                className="w-full rounded border border-zinc-700 bg-zinc-900 p-2"
+                className="w-full rounded-xl border border-line bg-surface-2 text-fg focus:border-accent focus:outline-none p-2"
                 placeholder="e.g. pin the knight"
                 value={label.idea ?? ""}
                 onChange={(e) => save({ idea: e.target.value })}
               />
             </div>
             <div>
-              <p className="mb-1 text-zinc-400">Opponent&apos;s motif: what the punish line threatens, or why the idea works.</p>
+              <p className="mb-1 text-muted">Opponent&apos;s motif: what the punish line threatens, or why the idea works.</p>
               <input
-                className="w-full rounded border border-zinc-700 bg-zinc-900 p-2"
+                className="w-full rounded-xl border border-line bg-surface-2 text-fg focus:border-accent focus:outline-none p-2"
                 placeholder="e.g. Nxe4 wins the pinned pawn"
                 value={label.opponentMotif ?? ""}
                 onChange={(e) => save({ opponentMotif: e.target.value })}
               />
             </div>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted">
               Zone: click squares on the board (at any step) to mark where to look.{" "}
               {zone.length ? `${zone.join(" ")} ` : ""}
               {zone.length > 0 && (
@@ -357,7 +357,7 @@ export default function LabelPage() {
               )}
             </p>
             <div>
-              <p className="mb-1 text-zinc-400">Good eval case?</p>
+              <p className="mb-1 text-muted">Good eval case?</p>
               <div className="flex gap-2">
                 {(["yes", "maybe", "no"] as const).map((u) => (
                   <button key={u} className={chip(label.useful === u)} onClick={() => save({ useful: u })}>
@@ -366,9 +366,9 @@ export default function LabelPage() {
                 ))}
               </div>
             </div>
-            <p className="text-zinc-400">Notes: what hint would have helped? Unsure about a label? Does the engine miss something?</p>
+            <p className="text-muted">Notes: what hint would have helped? Unsure about a label? Does the engine miss something?</p>
             <textarea
-              className="min-h-[6rem] rounded border border-zinc-700 bg-zinc-900 p-2"
+              className="min-h-[6rem] rounded-xl border border-line bg-surface-2 text-fg focus:border-accent focus:outline-none p-2"
               placeholder="free text"
               value={label.notes}
               onChange={(e) => save({ notes: e.target.value })}
@@ -383,7 +383,7 @@ export default function LabelPage() {
           <li key={r.id}>
             <button
               onClick={() => go(i)}
-              className={`rounded px-2 py-0.5 ${i === idx ? "bg-emerald-700 text-white" : labels[r.id]?.updatedAt ? "bg-zinc-700" : "bg-zinc-900 hover:bg-zinc-800"}`}
+              className={`rounded px-2 py-0.5 ${i === idx ? "bg-accent text-accent-ink" : labels[r.id]?.updatedAt ? "bg-surface-3 text-fg" : "bg-surface-2 text-fg-2 hover:bg-surface-3"}`}
               title={`${r.game.id} ply ${r.moment.ply}${momentKind(r) === "control" ? " (control)" : ""}`}
             >
               {momentKind(r) === "control" ? `c${i + 1}` : i + 1}
