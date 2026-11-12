@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import GameList from "@/components/GameList";
 import Lesson from "@/components/Lesson";
 import UsernameForm from "@/components/UsernameForm";
+import { dueCount, loadQueue } from "@/lib/review/queue";
 import type { GameSummary, PlayerStats } from "@/lib/types";
 
 interface GamesResponse {
@@ -16,6 +18,11 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<GamesResponse | null>(null);
   const [selected, setSelected] = useState<GameSummary | null>(null);
+  const [due, setDue] = useState(0);
+  useEffect(() => {
+    const q = loadQueue();
+    setDue(dueCount(q.items, q.clock));
+  }, [selected]);
 
   async function load(username: string) {
     setLoading(true);
@@ -40,9 +47,14 @@ export default function Home() {
     <main className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
       <div className="flex items-baseline justify-between">
         <h1 className="text-2xl font-semibold">AI Chess Coach</h1>
-        <a href="/label" className="text-sm text-zinc-500 hover:text-emerald-400">
-          Label moments
-        </a>
+        <nav className="flex gap-4 text-sm">
+          <Link href="/review" className="text-zinc-300 hover:text-emerald-400">
+            Review{due > 0 ? ` (${due} due)` : ""}
+          </Link>
+          <Link href="/label" className="text-zinc-500 hover:text-emerald-400">
+            Label moments
+          </Link>
+        </nav>
       </div>
 
       {!selected && <UsernameForm onSubmit={load} disabled={loading} />}
