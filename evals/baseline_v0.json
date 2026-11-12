@@ -1,0 +1,4915 @@
+{
+  "ranAt": "2026-11-11T21:33:29.008Z",
+  "options": {
+    "limit": null,
+    "stages": [
+      "attempt",
+      "nudge",
+      "hint",
+      "move",
+      "explain"
+    ],
+    "llm": true,
+    "judge": true,
+    "leak": true,
+    "concurrency": 4,
+    "out": "evals/baseline_v0.json"
+  },
+  "seconds": 240,
+  "summary": "Pure-function checks\n  verdict(best)=best                       100% (18/18)\n  verdict(played)=mistake|inaccuracy       100% (18/18)\n  idea grouping (unlabelled)               info: {\"Bxf7+\":\"A\",\"O-O\":\"B\",\"Qb3\":\"B\"}; {\"Nxc3\":\"A\",\"Bd5\":\"A\",\"Bc1\":\"A\"}; {\"e6\":\"A\",\"d5\":\"A\",\"b6\":\"A\"}; {\"bxc6\":\"A\",\"Ke7\":\"A\",\"Bd7\":\"B\"}; {\"Ngf6\":\"A\",\"e6\":\"A\",\"Bg6\":\"B\"}; {\"e5\":\"A\",\"Be3\":\"A\",\"Qg3\":\"B\"}; {\"dxc4\":\"A\",\"Rh5\":\"A\",\"Kd7\":\"B\"}; {\"Rc2\":\"A\",\"Qe4\":\"A\",\"Bf4\":\"B\"}; {\"hxg6\":\"A\",\"Be5\":\"A\",\"Rh3\":\"A\"}; {\"Qg4\":\"A\",\"h3\":\"A\",\"Qf5\":\"A\"}; {\"Rc2\":\"A\",\"Rc5\":\"A\",\"Nc1\":\"B\"}; {\"Qh6\":\"A\",\"Qg6\":\"A\",\"d5\":\"B\"}; {\"Ra8\":\"A\",\"Rb7\":\"A\",\"Rxg7\":\"A\"}; {\"Rxg5\":\"A\",\"Ke8\":\"B\",\"Ke7\":\"B\"}; {\"Rxg5\":\"A\",\"Rg6\":\"A\",\"Ke8\":\"B\"}; {\"g3\":\"A\",\"Kf3\":\"A\",\"c3\":\"A\"}; {\"Qh1\":\"A\",\"Qg1\":\"A\",\"Bc3\":\"B\"}; {\"d5\":\"A\",\"dxc5\":\"A\",\"Rxc3\":\"B\"}\n  moment type (unlabelled)                 info: only-move; many-roads; many-roads; only-move; multi-idea; multi-idea; multi-idea; multi-idea; only-move; only-move; only-move; only-move; only-move; only-move; multi-idea; many-roads; many-roads; only-move\n  human guess hits a good move               -   (0 labelled)\n\nPer rung  n   llm  try2  fallbk leak-ok  guess  judge: idea  no-give  depth  no-force\n  baseline 18                               22%\n  attempt  18  100%   6%   0%  100%    50%        100%    89%   89%   78%\n  nudge    18  100%   0%   0%  100%    67%         94%   100%   94%   94%\n  hint     18  100%  17%   0%  100%    83%        100%    67%   94%   89%\n  move     18  100%   0%   0%  100%   100%        100%   100%   94%  100%\n  explain  18  100%  22%   0%  100%   100%        100%   100%  100%   78%\n\nhint rung names piece+target square in 1 replies (allowed by the current prompt, informational)",
+  "results": [
+    {
+      "id": "186303160024-11",
+      "tags": [
+        "opening",
+        "white",
+        "medium-drop",
+        "only-move?"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"Bxf7+\":\"A\",\"O-O\":\"B\",\"Qb3\":\"B\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "only-move"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Qd5 develops the queen with an eye on c5 and f7, but the engine rates it a mistake (-1.34). Black answers with ...Qe7, defending the bishop and keeping the extra pawn. The queen then has to run again, while Black develops with tempo. Gambit play needs quick development, and here the queen costs you time. Want to try another move?",
+            "moves": [
+              "Qd5",
+              "Qe7"
+            ],
+            "arrows": [],
+            "squares": [],
+            "motif": "gambit development"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 60,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2459,
+          "guess": {
+            "move": "Nxc3",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": true,
+            "note": "The reply points at the development-with-tempo idea without naming Bxf7, but it pads with about six separate points and names the motif outright, which the attempt rung should avoid."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Look at Black's king. Which Black pieces are defending the squares around it, and what happens to that cover if one of them is removed? Ask what a forcing first move could open up before you spend time developing.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "king exposure"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 39,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1623,
+          "guess": {
+            "move": "Bxf7",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The nudge points at Black's king cover and a forcing first move without naming Bxf7+ or any square, which fits the nudge rung and a 1655 player's level."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Focus on f7. It's defended only by the king, and your bishop on c4 already hits it. Ask what happens if that pawn is taken with check and the king has to recapture. Which of your pieces could then arrive with check, and which Black piece would it attack?\n\nSee if the queen can hit c5 with tempo after the king is dragged forward.",
+            "moves": [],
+            "arrows": [],
+            "squares": [
+              "f7",
+              "c4",
+              "e8",
+              "c5",
+              "d1"
+            ],
+            "motif": "deflection of the king"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 64,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2008,
+          "guess": {
+            "move": "Bxf7",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": true,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply names the f7 pressure and deflection idea without stating the move, but it points at the Bxf7+ sacrifice too directly (highlighting f7, c4, and the queen to c5 with tempo), which is close to a near-best candidate and arguably gives it away at the hint rung."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is Bxf7+. After Kxf7, Qd5+ comes with check and the queen then takes the bishop on c5. The engine gives +0.67 for this line.\n\n- The idea: sacrifice the bishop to drag the king out and win the c5 bishop, so you win material back at once.\n- It also fixes what Qd5 did wrong. There the queen came out early and Black kept the extra pawn with ...Qe7.",
+            "moves": [
+              "Bxf7+",
+              "Kxf7",
+              "Qd5+",
+              "Qd5"
+            ],
+            "arrows": [
+              {
+                "from": "c4",
+                "to": "f7"
+              },
+              {
+                "from": "d1",
+                "to": "d5"
+              },
+              {
+                "from": "d5",
+                "to": "c5"
+              }
+            ],
+            "squares": [
+              "f7",
+              "c5"
+            ],
+            "motif": "desperado sacrifice / double attack with check"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 72,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2366,
+          "guess": {
+            "move": "Bxf7",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "At the move rung it names Bxf7+ and conveys the desperado sacrifice idea of dragging the king out and winning back the c5 bishop with a check-based double attack, with a short line and no jargon beyond what fits a 1655 player."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Bxf7+ works because the king has to come forward and Black's bishop on c5 is loose.\n\n- The line: Bxf7+ Kxf7 Qd5+ Kf8 Qxc5+ d6 Qxc3 Qf6 O-O Ke8 Be3 Qxc3 Nxc3. You win the bishop back, regain the c3 pawn and Black's king stays uncastled. The engine gives +0.67.\n- Qd5 went for the same two targets, but without check. Black answered ...Qe7, kept the extra pawn and developed with tempo. That left you at -1.34.\n- O-O and Qb3 are the other candidates. Both keep the gambit going with development, but they only get about equality.",
+            "moves": [
+              "Bxf7+",
+              "Kxf7",
+              "Qd5+",
+              "Kf8",
+              "Qxc5+",
+              "d6",
+              "Qxc3",
+              "Qf6",
+              "O-O",
+              "Ke8",
+              "Be3",
+              "Qxc3",
+              "Nxc3",
+              "Qd5",
+              "Qe7",
+              "O-O",
+              "Qb3"
+            ],
+            "arrows": [
+              {
+                "from": "c4",
+                "to": "f7"
+              },
+              {
+                "from": "d1",
+                "to": "d5"
+              },
+              {
+                "from": "d5",
+                "to": "c5"
+              }
+            ],
+            "squares": [
+              "f7",
+              "c5",
+              "c3"
+            ],
+            "motif": "deflection / overloaded defender (sacrifice to win loose bishop)"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 3,
+            "words": 98,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3656,
+          "guess": {
+            "move": "Bxf7",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "Explain rung names the sacrifice idea and the loose c5 bishop, gives the full line and why Qd5 allowed ...Qe7, and fits a 1655 player's level with a named tactic and short line, though it runs slightly past three points and the 'works because' opener is fine."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "bxc3",
+        "hit": false
+      }
+    },
+    {
+      "id": "186284283824-19",
+      "tags": [
+        "opening",
+        "white",
+        "medium-drop"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"Nxc3\":\"A\",\"Bd5\":\"A\",\"Bc1\":\"A\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "many-roads"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Nh4 attacks the queen, so it looks forcing. But the queen has a good reply. Qh5 pins the b5 queen against nothing, yet it offers a queen trade on the engine's terms: after Be2 a6 the white queen on b5 gets hit, and the line ends with White down material (eval -0.69). It also leaves the pawn on c3 alone, and Black's extra pawn keeps cramping you.\n\nThink about what your pieces are owed here, and what the opponent's c3 pawn is doing. Want to try another move?",
+            "moves": [
+              "Nh4",
+              "Qh5",
+              "Be2",
+              "a6"
+            ],
+            "arrows": [],
+            "squares": [],
+            "motif": "development over harassment"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 88,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2990,
+          "guess": {
+            "move": "Nxc3",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply points at the c3 pawn and piece development without naming Nxc3, though the c3 pointer sits close to the best move and the Qh5 and Be2 lines are muddled."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Look at the pawn on c3. It's the reason Black is ahead in material, and it also points at your king's side of the board. Ask yourself: is there a way to win it back with a developing move, while your queen is still safe on b5? Check what your minor pieces can still do before you start chasing the queen.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "development while regaining material"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 61,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2437,
+          "guess": {
+            "move": "Nxc3",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "Points at the c3 pawn and the material/recapture idea with a developing-move hint, without naming Nxc3 or any square, which suits the nudge rung and a 1664 player."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Your knight on b1 is the piece doing nothing. The black pawn on c3 is the target, and it's attacked once the right piece comes in. Taking it also keeps your queen on b5 and your bishops pointed at f7 and the black king's side. Which piece can win it back while developing?",
+            "moves": [],
+            "arrows": [],
+            "squares": [
+              "b1",
+              "c3"
+            ],
+            "motif": "development"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 53,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2968,
+          "guess": {
+            "move": "Nxc3",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The hint names the idea (the knight on b1 is undeveloped and should target c3) without stating Nxc3, though it points closely at the knight and square; the depth of concrete development and bishop pressure suits a 1664 player."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The move is Nxc3. It wins the pawn back and develops the knight that has done nothing so far. It also keeps your queen on b5 and your bishops aimed at f7 and the black king, so you keep the initiative. The engine gives it +1.86, while Nh4 drops to -0.69.",
+            "moves": [
+              "Nxc3",
+              "Nh4"
+            ],
+            "arrows": [
+              {
+                "from": "b1",
+                "to": "c3"
+              }
+            ],
+            "squares": [
+              "c3"
+            ],
+            "motif": "recapture with development"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 51,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1828,
+          "guess": {
+            "move": "Nxc3",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The move rung correctly names Nxc3 and the idea of recapturing with development while keeping the initiative, with depth suitable for a 1664 player, though it adds a few eval numbers and a fourth point that slightly pads the reply."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Nxc3 recaptures the pawn and brings the last piece into play, while Bc4 and Bg5 keep pressing on f7 and the black king.\n\n- Nh4 chases the queen, but Qh5 answers it. After Be2 a6 your queen is hit, and the engine's line ends with you worse at -0.69. You spent a tempo and left c3 where it was.\n- The engine's main line: Nxc3 a6 Qb3 Nge7 Rad1 Bg4 Nd5. Your pieces gain tempo with each move, and Black's king stays uncomfortable.\n- Bd5 is also strong at +1.44. It shares the idea of rapid development with pressure on f7.",
+            "moves": [
+              "Nxc3",
+              "Nh4",
+              "Qh5",
+              "Be2",
+              "a6",
+              "Qb3",
+              "Nge7",
+              "Rad1",
+              "Bg4",
+              "Nd5",
+              "Bd5"
+            ],
+            "arrows": [
+              {
+                "from": "b1",
+                "to": "c3"
+              },
+              {
+                "from": "c4",
+                "to": "f7"
+              }
+            ],
+            "squares": [
+              "c3",
+              "b1",
+              "f7"
+            ],
+            "motif": "development with tempo"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 3,
+            "words": 101,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3207,
+          "guess": {
+            "move": "Nxc3",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": true,
+            "note": "Explain rung correctly gives the line and motif, but it pads with a third bullet and opens with a restated move, and phrases like 'You spent a tempo' and the mismatch between Nh4 and Qh5 concern lean toward judgmental framing; the depth suits a 1664 player."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Nxc3",
+        "hit": true
+      }
+    },
+    {
+      "id": "186179104426-4",
+      "tags": [
+        "opening",
+        "black",
+        "small-drop",
+        "many-good"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"e6\":\"A\",\"d5\":\"A\",\"b6\":\"A\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "many-roads"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "2...e5 is a gambit-style break, but it's a mistake here. After dxe5 Black has no clear follow-up, and the engine's line has White keeping the extra pawn with a comfortable position (about -1.6 for you).\n\n- It strikes the center before your pieces are ready.\n- The d4 pawn can simply take, and your knight gets pushed around trying to regain it.\n\nTry another move that fights for the center while keeping the structure sound.",
+            "moves": [
+              "dxe5"
+            ],
+            "arrows": [],
+            "squares": [],
+            "motif": "premature pawn break"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 75,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2788,
+          "guess": {
+            "move": "d5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": true,
+            "note": "It names the premature central break idea without naming e6, d5, or b6, but the opening line is an unnecessary label ('gambit-style break') and the bullets and the closing 'Try another move' padding push it past the attempt rung's brevity, and the eval figure is extra detail at this rung."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Ask yourself: which of your pawns can challenge d4 without giving White a free capture? Look for a setup where every pawn move is supported by a piece or by another pawn, so your center and development stay in step.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "center control"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 40,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2385,
+          "guess": {
+            "move": "d5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The nudge points at the idea of challenging d4 with a supported pawn move without naming the move or square, and its vocabulary suits a 1684 player."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 2,
+          "errors": [
+            "try 1: stage hint: text names the candidate move e6",
+            "try 1: stage hint: text names the candidate move d5"
+          ],
+          "reply": {
+            "text": "Look at d4, the pawn that took your e-pawn's place in the fight for the center. After your first try, it simply captured and your knight had nothing to follow up with.\n\n- Your pieces aren't ready for a pawn break yet, so ask which quiet pawn step supports the center and keeps your bishop on f8 free.\n- Watch the squares highlighted: they show the pawn that was attacked and the central square you want to control.",
+            "moves": [],
+            "arrows": [],
+            "squares": [
+              "d4",
+              "e5",
+              "e7",
+              "d7"
+            ],
+            "motif": "central control before pawn break"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 78,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 4812,
+          "guess": {
+            "move": "e6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It names the central-control idea and the pawn-break motif and points at the quiet pawn step without naming e6, so it fits the hint rung at 1684."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is 2...e6. It supports a later ...d5, opens the f8-bishop, and keeps your center solid. Unlike 2...e5, nothing hangs, so you can castle and challenge d4 with ...c5 or ...d5 once you're developed. The engine rates it about equal (-0.10).",
+            "moves": [
+              "e6"
+            ],
+            "arrows": [
+              {
+                "from": "e7",
+                "to": "e6"
+              }
+            ],
+            "squares": [
+              "e6",
+              "d5"
+            ],
+            "motif": "solid center"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 43,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2255,
+          "guess": {
+            "move": "e6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "At the move rung it names 2...e6 and conveys the plan (support ...d5, open the f8 bishop, challenge d4), with depth suited to a 1684 player, though it pads slightly with an eval figure and a bit of extra detail."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 2,
+          "errors": [
+            "try 1: stage explain: moves[0] \"e5\" is not one of the engine's candidates"
+          ],
+          "reply": {
+            "text": "2...e6 is best because it builds the center without giving White a free pawn.\n\n- The engine line runs 2...e6 3.c4 Be7 4.Nc3 d5 5.Nf3 O-O. Every pawn move is supported, and ...c5 comes later.\n- The played break lets White simply capture and stay a clean pawn up, about -1.6 for you.\n\n2...d5 and 2...b6 share the idea of supporting the center before striking, and the engine rates both near equal.",
+            "moves": [
+              "e6",
+              "c4",
+              "Be7",
+              "Nc3",
+              "d5",
+              "Nf3",
+              "O-O",
+              "b6"
+            ],
+            "arrows": [
+              {
+                "from": "e7",
+                "to": "e6"
+              },
+              {
+                "from": "d7",
+                "to": "d5"
+              }
+            ],
+            "squares": [
+              "e6",
+              "d5",
+              "d4",
+              "e5"
+            ],
+            "motif": "premature pawn break"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 72,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 6458,
+          "guess": {
+            "move": "e6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The explain rung names the plan (supporting the center before striking), gives the engine line and the cost of the played break, and uses a motif label at a depth suited to a 1684 player, though the arrows and squares are extra detail for an explain-rung reply."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "d5",
+        "hit": true
+      }
+    },
+    {
+      "id": "186179104426-16",
+      "tags": [
+        "opening",
+        "black",
+        "large-drop",
+        "only-move?"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"bxc6\":\"A\",\"Ke7\":\"A\",\"Bd7\":\"B\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "only-move"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 2,
+          "errors": [
+            "try 1: text: \"Bc6\" is not a legal move here and not in the engine lines"
+          ],
+          "reply": {
+            "text": "Ke7 steps out of check, but it leaves the e4 knight without protection while White's queen on d5 attacks it. After Qxe4, White wins the knight and keeps the extra material. The engine puts you at about 3% to win after that.\n\nYour king had other ways to meet the check, and one of them changes the whole evaluation. Look again at what can deal with the checking piece, and try another move.",
+            "moves": [
+              "Ke7",
+              "Qxe4"
+            ],
+            "arrows": [],
+            "squares": [],
+            "motif": "loose piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 73,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 6681,
+          "guess": {
+            "move": "bxc6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It names the loose e4 knight and the queen's attack on it, pointing at the idea without naming bxc6 or any candidate, and the depth suits a 1684 player; though 'try another move' and 'one of them changes the whole evaluation' are mild, nothing grades the player."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Ask yourself which of your pieces can remove the checking bishop, and what that capture does to the structure around White's queen and king. Also, look at what the queen on d5 attacks after each recapture. Compare how those lines change the loose pieces on both sides.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "capturing the checking piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 47,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1672,
+          "guess": {
+            "move": "bxc6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It points at the idea of removing the checking bishop and its effect on White's queen and king without naming the capturing piece or square, which fits a nudge for a 1684 player."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Look at the checking bishop on c6 and the pawns that can take it. Two of your pawns can reach that square.\n\n- Check which recapture keeps the e4 knight defended or counterattacks.\n- Note the White queen on d5 and the king on e1: what lines open toward them once the c6 bishop is gone?\n- Your queen on g2 already attacks the rook on h1 and the f2 pawn.",
+            "moves": [],
+            "arrows": [],
+            "squares": [
+              "c6",
+              "e4",
+              "d5",
+              "e1",
+              "g2"
+            ],
+            "motif": "zwischenzug recapture"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 3,
+            "words": 71,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1928,
+          "guess": {
+            "move": "bxc6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": false,
+            "forcedStyle": true,
+            "note": "The hint names the checking bishop on c6 and the recapture idea without giving bxc6, but it pads with three bullets, mentions squares and a queen on g2 that is not the position's key idea, and the 'Two of your pawns can reach that square' line plus a misplaced queen reference make it confusing for a 1684 player."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The move is 8...bxc6. It removes the checking bishop and, importantly, it attacks the queen on d5 with the c6 pawn. White's queen must deal with that, so it can't just take the e4 knight for free. After Qxc6+ Ke7, your king is safe enough and your queen on g2 and knight on e4 keep real counterplay against f2 and the white king.",
+            "moves": [
+              "bxc6",
+              "Qxc6+",
+              "Ke7"
+            ],
+            "arrows": [
+              {
+                "from": "b7",
+                "to": "c6"
+              }
+            ],
+            "squares": [
+              "c6",
+              "d5"
+            ],
+            "motif": "zwischenzug recapture with tempo on the queen"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 63,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2297,
+          "guess": {
+            "move": "bxc6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It names the move and the idea of recapturing with the c6 pawn to hit the d5 queen, with a short line that suits a 1684 player."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "8...bxc6 is the move. It removes the checking bishop and hits the queen on d5 with a pawn, so White can't just take on e4.\n\n- Ke7 lost the tempo. After Qxe4 Qg4 Qxg4 Bxg4, you are a knight down and the engine gives about -9.\n- The engine line: bxc6 Qxc6+ Ke7 e6 Qxf2+ Kd1 Qf1+ Kc2 Nf2. Your queen and knight keep hitting f2 and the white king, and the king gets chased. This holds the eval at +3.67.\n- Bd7 is not an option, since Qxd7# is mate.\n\nThe lesson: when you are in check, look for a capture that also attacks something. Here a recapture with tempo on the queen.",
+            "moves": [
+              "bxc6",
+              "Ke7",
+              "Qxe4",
+              "Qg4",
+              "Qxg4",
+              "Bxg4",
+              "Qxc6+",
+              "e6",
+              "Qxf2+",
+              "Kd1",
+              "Qf1+",
+              "Kc2",
+              "Nf2",
+              "Bd7",
+              "Qxd7#"
+            ],
+            "arrows": [
+              {
+                "from": "b7",
+                "to": "c6"
+              },
+              {
+                "from": "c6",
+                "to": "d5"
+              }
+            ],
+            "squares": [
+              "c6",
+              "d5",
+              "e4"
+            ],
+            "motif": "zwischenzug: recapture with tempo on the queen"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 3,
+            "words": 114,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3818,
+          "guess": {
+            "move": "bxc6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": true,
+            "note": "The explain rung names the idea (recapture with tempo, pawn hitting the queen, Qxd7# danger) and gives a short line, which suits a 1684, but it pads with a lesson section and says Ke7 'lost the tempo' in a way that edges toward grading the player, so forcedStyle is marked true."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Bd7",
+        "hit": false
+      }
+    },
+    {
+      "id": "186044354642-14",
+      "tags": [
+        "opening",
+        "black",
+        "medium-drop",
+        "many-good"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"Ngf6\":\"A\",\"e6\":\"A\",\"Bg6\":\"B\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "multi-idea"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "c5 fights for the center and opens the c-file, but it leaves the f7 pawn and the long diagonal underdefended. White's reply is a knight jump that attacks f7, and the engine says Black struggles to meet it comfortably (about -2.5). Ask yourself: what does White's knight attack once it jumps forward, and which of your pieces is no longer guarding it? Try another move.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "weak f7 pawn"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 65,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1993,
+          "guess": {
+            "move": "e6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It points at the f7 weakness and the knight jump without naming Ngf6, e6, or Bg6, and the depth of a named tactic with a short question suits a 1682 player."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Look at your kingside development. Right now the knight on d7 blocks the queen's protection of f7 and the bishop on f8 is shut in. Ask: which piece could develop so it covers White's targets and keeps your pieces working together, instead of leaving the b7 pawn and the f7 pawn loose?",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "piece coordination"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 52,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2399,
+          "guess": {
+            "move": "Ngf6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The nudge points at kingside development and piece coordination without naming a move or square, and the depth suits a 1682 player, though it leans slightly toward the knight on d7 and the f7/b7 targets, which hints at Ngf6 territory without giving it away."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "White has two targets: f7 and b7. The Bg2 eyes b7 down the long diagonal, and a knight jump to g5 would hit f7.\n\n- Which of your pieces can both cover g5's pressure and unblock your kingside?\n- Look at the knight on d7: it blocks the queen from f7 and the diagonal for the f8 bishop.\n\nThe highlighted squares are the knight that is in the way and the targets White is aiming at. Find a developing move that gives the knight a better job.",
+            "moves": [],
+            "arrows": [],
+            "squares": [
+              "d7",
+              "g8",
+              "f7",
+              "b7",
+              "g5"
+            ],
+            "motif": "development"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 87,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3286,
+          "guess": {
+            "move": "Ndf6",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The hint names the White targets f7 and b7 and the d7 knight as the blocker, pointing toward developing the knight without naming Ngf6 or any destination square, which fits the hint rung and a 1682 player."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is Ngf6. It develops the knight from g8, so the Nd7 no longer has to guard everything, and it clears the way for ...e6 and ...Be7. It also adds a defender around the center. White's Ng5 and Bxb7 ideas are still there, but Black gets through them with a solid position (about -0.6).",
+            "moves": [
+              "Ngf6"
+            ],
+            "arrows": [
+              {
+                "from": "g8",
+                "to": "f6"
+              }
+            ],
+            "squares": [
+              "f6",
+              "f7",
+              "b7"
+            ],
+            "motif": "development"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 56,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1919,
+          "guess": {
+            "move": "Ngf6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply names Ngf6 with the development idea and freeing ...e6/...Be7, uses a short concrete line and eval, and suits a 1682 player at the move rung without grading the person."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Ngf6 develops the last kingside piece and prepares ...e6 and ...Be7. The engine line is Ngf6 Ng5 e6 Bxb7 Rb8 Bg2 Bg6 Nd2 Be7 e4, about -0.6. Black gives up b7 for a moment, then wins time with ...Rb8.\n\n- c5 left f7 and the long diagonal underdefended. After Ng5, Nxf7 is a real threat, and the engine line runs Ng5 e6 Nxf7 Kxf7 e4, about -2.5.\n- The lasting idea is to finish development and keep your pieces coordinated before opening the center with a pawn break.\n- e6 is nearly as good (-0.67) and follows the same plan.",
+            "moves": [
+              "Ngf6",
+              "Ng5",
+              "e6",
+              "Bxb7",
+              "Rb8",
+              "Bg2",
+              "Bg6",
+              "Nd2",
+              "Be7",
+              "e4",
+              "Nxf7",
+              "Kxf7"
+            ],
+            "arrows": [
+              {
+                "from": "g8",
+                "to": "f6"
+              },
+              {
+                "from": "f3",
+                "to": "g5"
+              },
+              {
+                "from": "g2",
+                "to": "b7"
+              }
+            ],
+            "squares": [
+              "f7",
+              "b7",
+              "d7"
+            ],
+            "motif": "development before pawn break"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 3,
+            "words": 100,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3148,
+          "guess": {
+            "move": "Ngf6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The explanation conveys the plan (finish development before a pawn break), the tactical reason c5 allowed Nxf7 and the Bxb7 idea, gives a concrete engine line, and fits a 1682 player's level without grading the person."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Ngf6",
+        "hit": true
+      }
+    },
+    {
+      "id": "186756902744-37",
+      "tags": [
+        "middlegame",
+        "white",
+        "large-drop",
+        "many-good"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"e5\":\"A\",\"Be3\":\"A\",\"Qg3\":\"B\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "multi-idea"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Rde1 brings a rook toward the center, but it spends a tempo on a quiet move. The engine drops the evaluation from +5.35 to about 0.00 after it.\n\n- It lets Black castle short with ...O-O and untangle: the king leaves the center and the rook on h8 joins the game.\n- The pin on the f6 knight and your central tension are worth more than slow regrouping.\n\nTake another look: what is Black's king still short of, and which of your pieces can use that right now? Try another move.",
+            "moves": [
+              "Rde1"
+            ],
+            "arrows": [],
+            "squares": [],
+            "motif": "initiative"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 91,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2359,
+          "guess": {
+            "move": "Bxf6",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply points toward the attack on Black's uncastled king and the f6 pin without naming e5 or any candidate, and its tactical depth suits a 1675 player."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Ask what the pinned knight on f6 is doing for Black. It is the only piece guarding against a lot of pressure. Which of your pawns could attack it and open lines toward the king that is still in the center?",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "pawn break"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 41,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2312,
+          "guess": {
+            "move": "e5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply points to the pawn-break idea against the pinned f6 knight without naming the pawn move or its destination square, which suits a nudge for a 1675 player."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Look at the pinned knight on f6 and the pawn on e4 right next to it. If that pawn advances, it hits the knight and the queen on d4 loses a defender of the center. Your queen on f3 and rook on f1 already point down the f-file at the same piece. Black's king on e8 is still in the middle.",
+            "moves": [],
+            "arrows": [],
+            "squares": [
+              "f6",
+              "e4",
+              "g5",
+              "f3",
+              "e8"
+            ],
+            "motif": "pawn break"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 61,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2462,
+          "guess": {
+            "move": "e5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The hint names the pawn break against the pinned f6 knight and the f-file pressure without stating e5 or an arrow, which fits the hint rung and a 1675 player."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is e5. The pawn attacks the pinned knight on f6, and the knight can't move without exposing the queen on f3's line and the bishop on g5's pressure on the king still on e8.\n\n- If Black's queen goes to d5, exf6 trades queens and leaves you with a strong attack.\n- Black stays stuck in the center and never gets time to castle.",
+            "moves": [
+              "e5",
+              "exf6"
+            ],
+            "arrows": [
+              {
+                "from": "e4",
+                "to": "e5"
+              },
+              {
+                "from": "e5",
+                "to": "f6"
+              }
+            ],
+            "squares": [
+              "e5",
+              "f6"
+            ],
+            "motif": "pawn break attacking a pinned piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 67,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2946,
+          "guess": {
+            "move": "e5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "At the move rung it names e5 and the pinned-knight pawn-break idea with a short line, which suits a 1675 player, though the claim that Black stays stuck in the center is somewhat loose."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "e5 wins because the knight on f6 is pinned and Black's king is still on e8. The pawn attacks it, and the knight has no good square.\n\n- Engine line: e5 Qd5 exf6 Qxf3 gxf3 Rg8 Rg1 gxf6 Bxf6. White stays about 5 pawns up.\n- Rde1 gave Black time for O-O. After Bxf6 gxf6 the position is level (0.02).\n\nQg3 and Be3 also keep a big edge (+4.9), because they keep the pressure on. The idea is the same: attack before Black untangles.",
+            "moves": [
+              "e5",
+              "Qd5",
+              "exf6",
+              "Qxf3",
+              "gxf3",
+              "Rg8",
+              "Rg1",
+              "gxf6",
+              "Bxf6",
+              "Rde1",
+              "Bxf6",
+              "gxf6",
+              "Qg3",
+              "Be3"
+            ],
+            "arrows": [
+              {
+                "from": "e4",
+                "to": "e5"
+              },
+              {
+                "from": "e5",
+                "to": "f6"
+              }
+            ],
+            "squares": [
+              "f6",
+              "e8",
+              "d4"
+            ],
+            "motif": "pin and pawn attack on the pinned piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 84,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3817,
+          "guess": {
+            "move": "e5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The explain rung names the pin and pawn attack motif, gives the engine line and what Rde1 allowed, and suits a 1675 player, though the eval numbers and the Qg3/Be3 aside add some padding."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Bxf6",
+        "hit": false
+      }
+    },
+    {
+      "id": "186303889154-32",
+      "tags": [
+        "middlegame",
+        "black",
+        "large-drop",
+        "many-good"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"dxc4\":\"A\",\"Rh5\":\"A\",\"Kd7\":\"B\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "multi-idea"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Ra4 is a mistake by the engine's count: the eval drops from about -0.2 to -5.0. The rook goes to a4 and the other rook is already on h4. Together they leave the king in the centre, and they can be hit by a forcing check and a pawn push.\n\nLook at what White's c-pawn and the d3-bishop can do with tempo. Then try another move.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "loose rook / tempo with check"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 66,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2052,
+          "guess": {
+            "move": "dxc4",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply points at White's c-pawn and d3-bishop as tempo sources without naming dxc4, Rh5, or Kd7, so it fits the attempt rung for a 1665 player, though its 'motif' field names a loose rook, which is not in the text shown to the player."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Ask yourself what is tying your pieces down. Your rook on h4 is exposed, and the c4 pawn is tension that White can resolve in its favour. Which of your pawns could release that tension on your terms, so that your king and rooks are not left loose?",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "loose pieces"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 48,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2209,
+          "guess": {
+            "move": "dxc4",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It points at the idea of tension on c4 and the exposed h4 rook without naming dxc4 or any square, which fits a nudge for a 1665 player, though it leans slightly toward plain-language framing."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Two things matter here. White's c4-pawn is attacking your d5-pawn, and your rook on h4 has few safe squares if White gains a tempo with g3. Ask what happens if you resolve the tension in the center before White does. Look at the d5 and c4 squares, and keep an eye on your rook's retreat route along the h-file.",
+            "moves": [],
+            "arrows": [],
+            "squares": [
+              "c4",
+              "d5",
+              "h4",
+              "d3"
+            ],
+            "motif": "pawn tension"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 59,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2033,
+          "guess": {
+            "move": "dxc4",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "Names the pawn tension on c4/d5 and the rook's safety on h4 without naming dxc4 or any destination move, which fits the hint rung and a 1665 player."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is dxc4. It resolves the central tension on your terms and takes a pawn. The Bd3 then has to recapture, and g3 only chases your rook to h5, where it is safe. After Ra4, by contrast, c5 opens the bishop's diagonal with check ideas on b5 while your king is still in the centre.",
+            "moves": [
+              "dxc4",
+              "Ra4",
+              "g3",
+              "c5"
+            ],
+            "arrows": [
+              {
+                "from": "d5",
+                "to": "c4"
+              }
+            ],
+            "squares": [
+              "c4",
+              "d5"
+            ],
+            "motif": "resolving central tension"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 57,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2055,
+          "guess": {
+            "move": "dxc4",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "Names the central tension and the idea of resolving it with dxc4 plus the line that follows, which suits a 1665 player at the move rung, though the claim that c5 gives check ideas on b5 is loosely supported."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 2,
+          "errors": [
+            "try 1: stage explain: moves[0] \"Ra4\" is not one of the engine's candidates"
+          ],
+          "reply": {
+            "text": "- dxc4 is best. It settles the centre first and wins a pawn. After g3 Rh5 Bxc4 Nd5 your pieces are coordinated and the eval stays level (-0.2). Rh5 and Kd7 are also close in the engine's view.\n- Ra4 left the king in the centre and the rook loose. The engine line is c5 bxc5 Bb5+ Kd8 Bxa4 cxd4. The check wins the rook, and the eval drops to -5.0.\n- The lesson: resolve the tension before activating a rook, and check which pieces can be hit with a tempo.",
+            "moves": [
+              "dxc4",
+              "g3",
+              "Rh5",
+              "Bxc4",
+              "Nd5",
+              "Kd7",
+              "Ra4",
+              "c5",
+              "bxc5",
+              "Bb5+",
+              "Kd8",
+              "Bxa4",
+              "cxd4"
+            ],
+            "arrows": [
+              {
+                "from": "d5",
+                "to": "c4"
+              },
+              {
+                "from": "h4",
+                "to": "h5"
+              }
+            ],
+            "squares": [
+              "a4",
+              "h4",
+              "c4",
+              "d5"
+            ],
+            "motif": "loose pieces / resolve tension first"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 3,
+            "words": 91,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 8746,
+          "guess": {
+            "move": "dxc4",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "Explain rung names the loose rook and tempo-check motif with a concrete line and lesson, fitting a 1665 player, though the claim that Ra4 allowed Bb5+ winning the rook is stated without much verification."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Bb4",
+        "hit": false
+      }
+    },
+    {
+      "id": "186180087086-51",
+      "tags": [
+        "middlegame",
+        "white",
+        "large-drop",
+        "many-good"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"Rc2\":\"A\",\"Qe4\":\"A\",\"Bf4\":\"B\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "multi-idea"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Nd4 puts the knight in the centre, but it leaves the e5 pawn without its defender. Black can take it with ...Nxe5, and the c4 rook is then attacked as well. After the best reply the engine has Black clearly better (-3.27), and the c4 rook and the d4 knight both end up under pressure. Look again at which of your pieces rely on each other. Which move keeps them all protected?",
+            "moves": [
+              "Nd4",
+              "Nxe5"
+            ],
+            "arrows": [
+              {
+                "from": "d7",
+                "to": "e5"
+              }
+            ],
+            "squares": [],
+            "motif": "overloaded defender"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 72,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2379,
+          "guess": {
+            "move": "Bxc5",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": true,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The arrow from d7 to e5 shows Black's ...Nxe5 capture, which is a threat rather than the coach's best move, but it points at the tactical theme and does not name Rc2, Bf4 or Qe4; however the reply also names the motif 'overloaded defender' in the metadata and the arrow hands over a concrete Black capture, so the giveaway flag is set true for the arrow revealing an opponent resource rather than a candidate move."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Look at the c4 rook. Which black pieces are aiming at it or at the squares around it, and what is it relying on for protection? Before you move anything, ask whether a quieter move can keep the rook safe and still hold e5.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "loose piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 44,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2042,
+          "guess": {
+            "move": "Bxc5",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The nudge points at the loose c4 rook and the e5 square without naming Rc2 or any destination, and the depth suits a 1674 player, though 'quieter move' is slightly vague."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Two things are loose here. The rook on c4 is only guarded by the queen on d3. The pawn on e5 is guarded only by the knight on f3.\n\n- If the knight leaves f3, e5 drops with tempo on c4.\n- Black's bishop on c5 and knight on d7 both bear down on that corner.\n\nLook for a move that keeps the knight on f3 and gets the rook out of the pin-and-fork zone. Which of your pieces is not yet doing a job?",
+            "moves": [],
+            "arrows": [
+              {
+                "from": "d7",
+                "to": "e5"
+              },
+              {
+                "from": "c5",
+                "to": "c4"
+              }
+            ],
+            "squares": [
+              "c4",
+              "e5",
+              "f3",
+              "c5",
+              "d7"
+            ],
+            "motif": "loose piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 85,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3287,
+          "guess": {
+            "move": "Rd4",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": true,
+            "note": "The hint names the loose rook on c4 and the knight on f3 guarding e5 without giving Rc2, but it pads with several points and a closing question, and the 'pin-and-fork zone' wording is somewhat forced for a 1674 player."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is Rc2. The rook steps off c4, so Nxe5 no longer comes with a hit on it, and the knight stays on f3 to keep e5 guarded. From c2 the rook also keeps the c-file contested and is protected by the queen. Bf4 and Qe4 are close behind, and they also keep e5 supported.",
+            "moves": [
+              "Rc2",
+              "Nxe5",
+              "Bf4",
+              "Qe4"
+            ],
+            "arrows": [
+              {
+                "from": "c4",
+                "to": "c2"
+              }
+            ],
+            "squares": [
+              "c4",
+              "c2",
+              "e5",
+              "f3"
+            ],
+            "motif": "loose piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 57,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1882,
+          "guess": {
+            "move": "Rc2",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "At the move rung it names Rc2 and gives a concrete idea (rook leaving c4 removes the Nxe5 hit, knight keeps e5 guarded), which fits a 1674 player, though it adds a couple of extra candidate points and a generic 'loose piece' motif label."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 2,
+          "errors": [
+            "try 1: stage explain: moves[0] \"Nd4\" is not one of the engine's candidates"
+          ],
+          "reply": {
+            "text": "Rc2 works because it solves two problems at once: the rook leaves c4, and the knight stays on f3 to guard e5.\n\n- The played Nd4 removed the only defender of e5. After ...Nxe5 the rook on c4 is attacked, and the knight on d4 is also loose to ...Bxd4. The engine's reply line runs Nxe5 Qb3 Nxc4 Qxc4 Bxd4 Qxd4 f6 and rates it -3.27 for White.\n- The engine's line after the best move runs Rc2 Rh8 Qe4 Rh5 g4, and White stays comfortably better (+1.80). Bf4 and Qe4 also keep e5 supported, so they share the idea.\n\nThe lesson: before moving a defender, check what it was guarding and whether a loose piece can then be hit with tempo.",
+            "moves": [
+              "Rc2",
+              "Rh8",
+              "Qe4",
+              "Rh5",
+              "g4",
+              "Bf4",
+              "Nxe5",
+              "Qb3",
+              "Nxc4",
+              "Qxc4",
+              "Bxd4",
+              "Qxd4",
+              "f6"
+            ],
+            "arrows": [
+              {
+                "from": "c4",
+                "to": "c2"
+              }
+            ],
+            "squares": [
+              "c4",
+              "e5",
+              "f3"
+            ],
+            "motif": "overloaded defender / loose piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 122,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 6550,
+          "guess": {
+            "move": "Rc2",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "Explain rung correctly names the overloaded defender idea and the loose knight on d4, gives a short engine line, and fits a 1674 player, though the multi-line eval citations and 'two problems at once' framing lean slightly dense."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Qxd7",
+        "hit": false
+      }
+    },
+    {
+      "id": "186131276790-51",
+      "tags": [
+        "middlegame",
+        "white",
+        "large-drop",
+        "only-move?"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"hxg6\":\"A\",\"Be5\":\"A\",\"Rh3\":\"A\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "only-move"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Bxe7 wins a knight, but it trades off your strong bishop on f6 and lets the rook recapture on e7 with tempo. The evaluation drops from about +15.8 to roughly +0.5. The c3 pawn then becomes a real problem, and the engine's line gives Black counterplay with Nd3 and Rb8. Your h5 pawn and the open h-file were creating bigger threats. Take another look at what that pawn can do, and try again.",
+            "moves": [
+              "Bxe7"
+            ],
+            "arrows": [],
+            "squares": [],
+            "motif": "pawn break on the h-file"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 73,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2336,
+          "guess": {
+            "move": "hxg6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": false,
+            "forcedStyle": true,
+            "note": "It points at the h5 pawn and the h-file without naming hxg6, but it pads the attempt rung with an eval swing, a c3 weakness and engine counterplay, which is too much for the first hint and more than three points."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Ask yourself which of your pieces is still not fully used. Your rooks are lined up on the h-file, and Black's king has few defenders. Look for a way to open that file and make Black's kingside structure pay for it, instead of cashing in material right away.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "file opening"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 48,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2323,
+          "guess": {
+            "move": "hxg6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "Points toward the file-opening idea (h-file rooks, Black's exposed king) without naming hxg6 or any square, which fits a nudge for a 1705 player."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Look at the pawn on h5 and the pawn on g6 in front of Black's king. Your rooks are stacked on the h-file, and the h7 pawn is the only thing between them and the king.\n\n- Ask what happens to h7 if the g6 pawn is forced to change.\n- Black's king on g8 has very few defenders, and Black's knight on e7 is tied to that defense.",
+            "moves": [],
+            "arrows": [],
+            "squares": [
+              "h5",
+              "g6",
+              "h7",
+              "g8",
+              "h2",
+              "h1"
+            ],
+            "motif": "pawn break"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [
+              "pawn->g6 (hxg6)"
+            ],
+            "bullets": 2,
+            "words": 69,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1886,
+          "guess": {
+            "move": "hxg6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It points at the h-file and the g6/h7 pawn break idea without naming hxg6 or any destination square, which fits the hint rung for a 1705 player, though the squares list includes h5 and g6 which hint closely at the capture."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is hxg6. After fxg6, Rxh7 hits the king with the rooks lined up on the h-file. Black's king has to run, and Nxe6+ forks it with the rook on c7. That is worth about +15.8, while Bxe7 only keeps about +0.5. Capturing on g6 opens the file before cashing in the knight.",
+            "moves": [
+              "hxg6",
+              "fxg6",
+              "Rxh7",
+              "Bxe7"
+            ],
+            "arrows": [
+              {
+                "from": "h5",
+                "to": "g6"
+              },
+              {
+                "from": "h2",
+                "to": "h7"
+              }
+            ],
+            "squares": [
+              "g6",
+              "h7",
+              "g8"
+            ],
+            "motif": "file opening attack"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 55,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2970,
+          "guess": {
+            "move": "hxg6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply names hxg6 and the file-opening attack with the rooks on the h-file, which fits the move rung and a 1705 player, though it leans on eval numbers and a long line a bit more than necessary."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "hxg6 opens the h-file while Black's king is short of defenders. After fxg6, Rxh7 wins the pawn with a rook attack on the king. Black has to run with Kf8, and Nxe6+ forks king and rook on c7. The line continues Ke8 Nxc7+ Kd8 Ne6+ Kd7 Nc5+ Kc7 f4, about +15.8.\n\n- Bxe7 took a knight but gave up the bishop that controlled the position. After Rxe7 and Nd3, the c3 pawn gave Black real counterplay, and the eval fell to about +0.5.\n- Lesson: when the king is exposed and the file is yours, open lines first. The knight on e7 wasn't going anywhere.",
+            "moves": [
+              "hxg6",
+              "fxg6",
+              "Rxh7",
+              "Kf8",
+              "Nxe6+",
+              "Ke8",
+              "Nxc7+",
+              "Kd8",
+              "Ne6+",
+              "Kd7",
+              "Nc5+",
+              "Kc7",
+              "f4",
+              "Bxe7",
+              "Rxe7",
+              "Nd3"
+            ],
+            "arrows": [
+              {
+                "from": "h5",
+                "to": "g6"
+              },
+              {
+                "from": "h2",
+                "to": "h7"
+              },
+              {
+                "from": "f4",
+                "to": "e6"
+              }
+            ],
+            "squares": [
+              "h7",
+              "g8",
+              "e6",
+              "c7"
+            ],
+            "motif": "file opening attack on the king (fork follow-up)"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 105,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3848,
+          "guess": {
+            "move": "hxg6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "Explain rung correctly names the file-opening attack and fork follow-up, gives the line and why Bxe7 lost ground, and is pitched at an appropriate depth for a 1705 player without grading the person."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Nxe6",
+        "hit": false
+      }
+    },
+    {
+      "id": "186130710148-50",
+      "tags": [
+        "middlegame",
+        "black",
+        "small-drop",
+        "engine-disagreement?"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "inaccuracy"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"Qg4\":\"A\",\"h3\":\"A\",\"Qf5\":\"A\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "only-move"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "h3 keeps a big edge: the engine still has you clearly better, about 86% to win. But it gives White time. The engine's reply is Qc7, which activates the queen and lets White keep fighting around your king and queen. Before settling, ask what White's queen and knight are aiming at, and whether there's a move that makes those threats harder to meet. Want to try another move?",
+            "moves": [
+              "h3",
+              "Qc7"
+            ],
+            "arrows": [],
+            "squares": [],
+            "motif": "initiative"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 68,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 5200,
+          "guess": {
+            "move": "Qf5",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply points at White's queen and knight threats without naming a move or tactic, which suits the attempt rung for a 1694 player."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Look at the queen on d7 and the knight on g5 from White's side. Which of your pieces is the most exposed, and what is it doing for you right now? Ask whether you can use your kingside pressure and put a question to that piece with tempo, instead of making a useful but slower move.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "initiative"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 56,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1790,
+          "guess": {
+            "move": "f6",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The nudge points at the initiative and the exposed queen on d7 facing White's pressure without naming Qg4 or any square, which fits a 1694 player at the nudge rung."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "- White's knight on g5 hits your queen's defenders and eyes f7 and h7. Your queen on d7 is also tied to defending f7, so it has few good squares.\n- The bishop on g2 is a strong attacker, but White's king on g1 is the target of your pressure. Look at the g4 square: if one of your pieces lands there with tempo, it hits the knight and the king's cover.\n- Ask which of your queen's moves attacks the knight and keeps the king in view.",
+            "moves": [],
+            "arrows": [
+              {
+                "from": "g5",
+                "to": "f7"
+              }
+            ],
+            "squares": [
+              "g5",
+              "d7",
+              "g4",
+              "g1"
+            ],
+            "motif": "tempo on the queen"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 3,
+            "words": 88,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2544,
+          "guess": {
+            "move": "Qg4",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": true,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply names the knight-on-g5 pressure and the tempo motif at a fitting depth, but pointing to g4 and asking about queen moves that hit the knight comes close to revealing Qg4."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is Qg4. It hits the knight on g5, and the queen and bishop together aim at White's king. White has to deal with the knight and the mating net at once.\n\n- After Qg4, the engine's line has White's king stepping aside and Black taking the knight with Qxg5. That keeps the eval near +7.\n- h3 is slower. It gives White time for Qc7 and counterplay.",
+            "moves": [
+              "Qg4",
+              "h3",
+              "Qc7",
+              "Qxg5"
+            ],
+            "arrows": [
+              {
+                "from": "d7",
+                "to": "g4"
+              },
+              {
+                "from": "g4",
+                "to": "g5"
+              }
+            ],
+            "squares": [
+              "g4",
+              "g5",
+              "g2"
+            ],
+            "motif": "queen and bishop battery with attack on a loose knight"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 70,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 8805,
+          "guess": {
+            "move": "Qg4",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The move rung correctly names Qg4 and the battery-plus-loose-knight idea, with a short line and a concise comparison to h3, which suits a 1694 player; it does not grade the player or pad the reply."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Qg4 works because the queen attacks the knight on g5 with tempo, and the bishop on g2 already points at the king. White can't easily save the knight and also cover the mating threats.\n\n- Engine line: Qg4 Kh2 Qxg5. Black wins the knight and stays around +7. White's few checks don't give enough play.\n- h3 gave up that tempo. After Qc7 Qg4 Qe5+, White gets the queen to the centre and ends up trading queens in a worse but more defensible position, around +4.9.\n- Qf5 shares the idea of using the queen with tempo, but the engine rates it lower at about +4.1.\n\nThe lesson is that when you attack the king, a forcing move that hits a defender beats a quiet improvement.",
+            "moves": [
+              "Qg4",
+              "Kh2",
+              "Qxg5",
+              "h3",
+              "Qc7",
+              "Qg4",
+              "Qe5+",
+              "Qf5"
+            ],
+            "arrows": [
+              {
+                "from": "d7",
+                "to": "g4"
+              },
+              {
+                "from": "g4",
+                "to": "g5"
+              },
+              {
+                "from": "g2",
+                "to": "g1"
+              }
+            ],
+            "squares": [
+              "g4",
+              "g5",
+              "g1"
+            ],
+            "motif": "attack with tempo on a defender"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 3,
+            "words": 126,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 7800,
+          "guess": {
+            "move": "Qg4",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": true,
+            "note": "Names the tactical idea (attacking the g5 knight with tempo on the queen) and gives a short engine line at a depth suited to a 1694 player, but it pads with several eval numbers and a closing lesson, which exceeds the three-point limit."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Qg4",
+        "hit": true
+      }
+    },
+    {
+      "id": "186058301434-59",
+      "tags": [
+        "middlegame",
+        "white",
+        "large-drop",
+        "only-move?"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"Rc2\":\"A\",\"Rc5\":\"A\",\"Nc1\":\"B\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "only-move"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Rc3 is a mistake by the engine's count: the eval swings from +2.70 to -5.56. It was playing to hit the a3 pawn, but that pawn is the problem, and the line allows ...Rb8 with ...a2 coming. Your rook ends up where it can't stop the passed pawns or the back rank. Before you try again, ask where the rook needs to be to stay active and still watch that pawn. Try another move.",
+            "moves": [
+              "Rc3"
+            ],
+            "arrows": [],
+            "squares": [],
+            "motif": "passed pawn"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 74,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2083,
+          "guess": {
+            "move": "Nc1",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": false,
+            "forcedStyle": true,
+            "note": "It names the pawn and passed-pawn idea without giving the move, but it opens with an engine-eval recitation, pads with several points, and uses jargon-heavy stock phrases; at 1668 the depth is only partly right and the 'Try another move' ending is filler."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Think about the a-pawns. Black's passed pawn on a3 is the main source of counterplay, and it needs the b-file and a rook to support it. Ask yourself: which rook placement keeps your 7th-rank pressure but also covers the pawn's path? Also check which black rook move would be most annoying, and see whether your rook can stay out of its way.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "passed pawn"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 62,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1925,
+          "guess": {
+            "move": "Nb4",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": true,
+            "note": "It names the passed a-pawn and the rook's 7th-rank role without giving the move, but it pads with three questions/points, which is more than a nudge should carry, and the opening 'Think about' is mild filler."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Black's plan is ...Rb8 followed by ...a2, so the a-pawn's path matters most.\n- Look at the a2 square. Your rook has to guard it from the side or from behind the pawn, while the knight on d3 stays protected.\n- On the c-file, ask which square keeps your rook close to the pawn's route and still out of reach of Black's rook.\n\nStill no move named. Which rook square does that?",
+            "moves": [],
+            "arrows": [
+              {
+                "from": "a3",
+                "to": "a2"
+              }
+            ],
+            "squares": [
+              "a3",
+              "a2",
+              "b8",
+              "c7"
+            ],
+            "motif": "passed pawn"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 72,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2350,
+          "guess": {
+            "move": "Rc2",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It names Black's plan of ...Rb8 and ...a2 and the passed-pawn motif without naming a move, though the c-file pointer plus the a3-a2 arrow come close to narrowing the answer."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is Rc2. The rook sits on the second rank, so it covers a2 and keeps the a3 pawn from advancing. After ...Rb8, Kf1 brings the king over, and the engine keeps +2.70. Rc3 let the pawn run with ...a2 instead.",
+            "moves": [
+              "Rc2",
+              "Rb8",
+              "Kf1",
+              "Rc3"
+            ],
+            "arrows": [
+              {
+                "from": "c7",
+                "to": "c2"
+              }
+            ],
+            "squares": [
+              "a2",
+              "c2"
+            ],
+            "motif": "stopping a passed pawn"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 43,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2349,
+          "guess": {
+            "move": "Rc2",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "At the move rung it names Rc2 and the idea of stopping the a-pawn with the rook on the second rank, with a short line and a correct arrow, which suits a 1668 player, though 'a3 pawn from advancing' is slightly loose since the real threat is ...a2."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Rc2 stops the a3 pawn at its source. It sits on the second rank, so ...a2 gets no support and the pawn stays blockaded.\n- Engine line: Rc2 Rb8 Kf1 Rb4 Ra2 Rxd4 Rxa3. White wins the a3 pawn and stays up material, eval +2.70.\n- Rc3 allowed ...Rb8 and ...a2. Black's rook then supports the pawn from the b-file, and the passed pawn queens or wins material (-5.56).\n\nThe lesson: stop a passed pawn with your rook from behind or beside it before using the rook for activity. Nc1 and Rc5 were worse by the engine, so Rc2 is the only move that holds the edge.",
+            "moves": [
+              "Rc2",
+              "Rc3",
+              "Rb8",
+              "Kf1",
+              "Rb4",
+              "Ra2",
+              "Rxd4",
+              "Rxa3",
+              "Nc1",
+              "Rc5"
+            ],
+            "arrows": [
+              {
+                "from": "c7",
+                "to": "c2"
+              },
+              {
+                "from": "c2",
+                "to": "a2"
+              }
+            ],
+            "squares": [
+              "a2",
+              "a3",
+              "c2"
+            ],
+            "motif": "stopping a passed pawn"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 107,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3680,
+          "guess": {
+            "move": "Rc2",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "Explain rung names the passed-pawn blockade idea and gives the engine line and the motif, with depth suited to a 1668 player, though it leans on eval numbers and a slightly absolute 'only move' claim."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Rxf7",
+        "hit": false
+      }
+    },
+    {
+      "id": "186044354642-24",
+      "tags": [
+        "middlegame",
+        "black",
+        "large-drop",
+        "only-move?"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"Qh6\":\"A\",\"Qg6\":\"A\",\"d5\":\"B\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "only-move"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Bd3 attacks the knight on c4 and the rook on f1 in one go, but it leaves your queen on f6 exposed on the f-file. White can take it with Rxf6, and after Nxf6 you are down the exchange and more (engine: -5.01). The bishop's threats don't outweigh that. Before you try again, check which of your pieces is on a line the opponent controls.",
+            "moves": [
+              "Bd3",
+              "Rxf6",
+              "Nxf6"
+            ],
+            "arrows": [
+              {
+                "from": "f1",
+                "to": "f6"
+              }
+            ],
+            "squares": [],
+            "motif": "queen on open file"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 65,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2121,
+          "guess": {
+            "move": "Be4",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply names the idea (the queen on f6 is exposed to Rxf6 on the open f-file) without naming Qh6, d5, Qg6 or the queen move, and its tactical depth suits a 1682 player."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Look at White's last move, Nd4. It opens the f-file, and it also lines up with your queen. Ask yourself two questions:\n- Which of your pieces is doing a job, and which is just standing in the way of White's pieces?\n- Can you move the queen with a purpose, or keep it protected from the file?",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "queen on the open file"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 58,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1685,
+          "guess": {
+            "move": "Nd3",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It points at the queen and the open f-file motif without naming Qh6 or any destination square, which suits the nudge rung for a 1682 player, though 'Nd4 lines up with your queen' is slightly loose since the queen is on f6 and the Nd4 relation is to the f-file."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Your queen on f6 is the target: White's rook on f1 looks straight at it, and the knight on d4 also eyes the f5 bishop. The rook can't be allowed to take on f6 for free.\n- Look at the queen's route to the kingside, where White's g3 pawn and king structure are loose.\n- Find a queen move that leaves the f-file and keeps an eye on that side of the board.",
+            "moves": [],
+            "arrows": [
+              {
+                "from": "f1",
+                "to": "f6"
+              },
+              {
+                "from": "d4",
+                "to": "f5"
+              }
+            ],
+            "squares": [
+              "f6",
+              "f1",
+              "f5",
+              "d4",
+              "g3"
+            ],
+            "motif": "queen on the open file"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 73,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2140,
+          "guess": {
+            "move": "Qg6",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It names the queen-on-the-open-file motif and points the player to leave the f-file without naming a square, though the claim that the f1 rook attacks f6 is inaccurate because the f5 bishop blocks it."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is Qh6. It takes the queen off the f-file, so Rxf6 is no longer possible, and it keeps pressure on the kingside, where White's g3 pawn and king are loose. It also keeps the f5 bishop defended against Nxf5 tricks. The engine rates it at +1.25 for you. Bd3 lost the queen for a rook.",
+            "moves": [
+              "Qh6",
+              "Rxf6",
+              "Nxf5"
+            ],
+            "arrows": [
+              {
+                "from": "f6",
+                "to": "h6"
+              }
+            ],
+            "squares": [
+              "f6",
+              "h6",
+              "f1"
+            ],
+            "motif": "loose piece / queen on an open file"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 58,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1957,
+          "guess": {
+            "move": "Qh6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It names Qh6 and explains the idea (leaving the f-file and pressuring the loose kingside), which fits a 1682 player, though the claim that Qh6 defends f5 looks wrong and the eval and material remarks pad the reply."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 2,
+          "errors": [
+            "try 1: stage explain: moves[0] \"Bd3\" is not one of the engine's candidates"
+          ],
+          "reply": {
+            "text": "Qh6 solves the real problem. White's Nd4 uncovered the rook on f1 against your queen on f6. Your actual move allowed Rxf6, which wins queen for rook (engine: -5.01).\n- Engine line: Qh6 Nf3 Qh5 e4 Bxe4 h4 d5 Ng5 Bxg2. The queen stays active, and your bishop trades off White's fianchetto bishop.\n- Other tries: d5 (+0.21) and Qg6 (+0.06) also deal with the f-file but give up most of your edge. The lesson: check what your opponent's last move uncovered before you start an attack.",
+            "moves": [
+              "Qh6",
+              "Rxf6",
+              "Nf3",
+              "Qh5",
+              "e4",
+              "Bxe4",
+              "h4",
+              "d5",
+              "Ng5",
+              "Bxg2",
+              "Qg6"
+            ],
+            "arrows": [
+              {
+                "from": "f6",
+                "to": "h6"
+              },
+              {
+                "from": "f1",
+                "to": "f6"
+              }
+            ],
+            "squares": [
+              "f6",
+              "f1",
+              "h6"
+            ],
+            "motif": "discovered attack on the queen (x-ray on the f-file)"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 87,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 10262,
+          "guess": {
+            "move": "Qh6",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "Explain rung correctly names the discovered x-ray motif on the f-file and the Rxf6 threat, with a short engine line and alternatives, at a depth suited to a 1682 player."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Qxd4",
+        "hit": false
+      }
+    },
+    {
+      "id": "186303160024-109",
+      "tags": [
+        "endgame",
+        "white",
+        "large-drop",
+        "only-move?"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"Ra8\":\"A\",\"Rb7\":\"A\",\"Rxg7\":\"A\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "only-move"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Kh3 steps next to the rook's check line, and the engine's reply is Rh1+. That pushes the king back with tempo and lets the a-pawn promote with a1=Q. The eval falls from about equal to -10.\n\n- The a2 pawn is one step from queening, so every move must deal with it.\n- Ask which of your pieces can stop it, or at least keep the checks going.\n\nTry another move.",
+            "moves": [
+              "Kh3"
+            ],
+            "arrows": [],
+            "squares": [],
+            "motif": "passed pawn race"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 71,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2436,
+          "guess": {
+            "move": "Kf3",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply names the passed-pawn race idea and the a2 threat without naming Ra8, Rb7, or Rxg7, and its depth suits a 1655 player."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Think about the geometry of the a-pawn. Your rook is on the a-file but on the wrong side of the pawn. Ask which square on that file puts your rook behind the pawn, where it can still watch the promotion square. Also check that your king isn't walking into the checks.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "rook behind the passed pawn"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 51,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2353,
+          "guess": {
+            "move": "Ra3",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The nudge names the rook-behind-the-passed-pawn motif and points toward the a-file without naming a move or square, and it grades no one."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Your rook on a7 is in front of the pawn, so it can't watch a1. Black's rook on a1 also guards the queening square and gives checks along the first rank and the g-file.\n\n- Look at the a8 corner: a rook there pins down the pawn from behind. That's the target.\n- Black's checks on g1 and h1 are the threat to watch. Your king has to stay where those checks don't win tempo.",
+            "moves": [],
+            "arrows": [],
+            "squares": [
+              "a8",
+              "a2",
+              "a1",
+              "g1",
+              "h1"
+            ],
+            "motif": "rook behind the passed pawn"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 75,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2304,
+          "guess": {
+            "move": "Ra8",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": true,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply names the rook-behind-the-passed-pawn idea and the g1/h1 checks, but highlighting a8 as the target square effectively points to Ra8, the engine's best move, which is too much at the hint rung."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The move is Ra8. Your rook is in front of the a-pawn now, but a8 puts it on the far side, where it attacks Black's rook on a1 and pulls the fight onto the a-file. After Rg1+ you play Kf5, and Rxa2 only comes later, once your king has stepped up. Kh3 and the other tries (Rb7, Rxg7) all lose to a1=Q.",
+            "moves": [
+              "Ra8",
+              "Kh3",
+              "Rb7",
+              "Rxg7",
+              "Rg1+",
+              "Kf5",
+              "Rxa2"
+            ],
+            "arrows": [
+              {
+                "from": "a7",
+                "to": "a8"
+              }
+            ],
+            "squares": [
+              "a8",
+              "a1",
+              "a2"
+            ],
+            "motif": "rook activity against a passed pawn"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 62,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2414,
+          "guess": {
+            "move": "Ra8",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": false,
+            "forcedStyle": false,
+            "note": "The reply names the move and the rook-activity-against-a-passed-pawn idea with a short line, but at 1655 it stays at the tactical level and skips the longer-term plan (king activation and the a-file fight) that this rating should get."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Ra8 is the move. It attacks the black rook on a1, so Black can't just queen the pawn. Black has to deal with the rook first, and the pawn stays stuck on a2.\n\n- Engine line: Ra8 Rg1+ Kf5 Rg5+ Kf4 Kxh5 (sic: Rxa2 follows) Rxa2 Rg1 Ra6 Rxg6 Ra1. Your king steps up with tempo, and the rook takes the pawn once the checks stop. White stays level at -0.17.\n- Kh3 allowed Rh1+ Kg4 a1=Q. Once the pawn queens, the game is lost. Rb7 and Rxg7 fail the same way.\n\nMotif: rook activity and stopping a passed pawn. Don't let the pawn queen, and use your rook to attack the enemy rook and pawn.",
+            "moves": [
+              "Ra8",
+              "Kh3",
+              "Rh1+",
+              "Kg4",
+              "a1=Q",
+              "Rb7",
+              "Rxg7"
+            ],
+            "arrows": [
+              {
+                "from": "a7",
+                "to": "a8"
+              },
+              {
+                "from": "a8",
+                "to": "a1"
+              }
+            ],
+            "squares": [
+              "a8",
+              "a1",
+              "a2"
+            ],
+            "motif": "stopping a passed pawn"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 116,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3625,
+          "guess": {
+            "move": "Ra8",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The explain rung names the rook-activity and passed-pawn motif, gives the engine line and the refutation of Kh3, and fits a 1655 player, though the stray '(sic: Rxa2 follows)' artifact should be cleaned up."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Rxa2",
+        "hit": false
+      }
+    },
+    {
+      "id": "186179398940-64",
+      "tags": [
+        "endgame",
+        "black",
+        "large-drop",
+        "repeated-motif"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"Rxg5\":\"A\",\"Ke8\":\"B\",\"Ke7\":\"B\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "only-move"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Rxb2 grabs a pawn, but it takes the rook away from the action and leaves the king on f8 on the same file as the d-rook. The engine says the eval drops from +5.24 to -5.48.\n\n- It allows Rd8+, which forces the king to move and wins your g8 rook.\n- Your king is still on the back rank and your pieces are loose.\n\nLook at the d-file and at the g5 pawn, then try another move.",
+            "moves": [
+              "Rxb2",
+              "Rd8+"
+            ],
+            "arrows": [
+              {
+                "from": "d1",
+                "to": "d8"
+              }
+            ],
+            "squares": [],
+            "motif": "back-rank weakness"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 78,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3032,
+          "guess": {
+            "move": "Rc8",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": true,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply names the back-rank idea and the d-file tactic at a fitting depth, but the d1-d8 arrow and the 'look at the g5 pawn' hint point toward the best move Rxg5, which breaks the attempt-rung rule against revealing it."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Ask yourself which of White's pieces is the only thing holding the position together. Count what each side's rooks are attacking and defending, and see if one capture creates a threat that also keeps your own rook safe from a back-rank check.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "loose piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 42,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2052,
+          "guess": {
+            "move": "Rxg5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply points toward the loose-piece idea and a capture-created threat without naming the move or any square, and it doesn't grade the player, though its two sentences are slightly dense for a nudge."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Look at the g5 pawn. It is the target, and your g8 rook already eyes it. Your problem is the d-file: Rd8+ is the threat that makes grabbing b2 fail, because it skewers the king and the g8 rook. Find a capture that wins material and answers that threat, so your rook isn't left hanging after a check.",
+            "moves": [
+              "Rd8+"
+            ],
+            "arrows": [
+              {
+                "from": "d1",
+                "to": "d8"
+              }
+            ],
+            "squares": [
+              "g5",
+              "g8",
+              "d8",
+              "f8"
+            ],
+            "motif": "loose piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 58,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2574,
+          "guess": {
+            "move": "Rxg5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": true,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply names the Rd8+ threat and the loose-piece motif, but the arrow and the highlighted g5 target point almost directly at the best capture Rxg5, which is too revealing for a hint rung."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is Rxg5. It takes the g5 pawn with the rook, so White's Rd8+ no longer wins anything. Now Rd8+ is met by the rook on g5 staying active, and the king isn't skewered against an undefended rook. You keep the extra material and the initiative.",
+            "moves": [
+              "Rxg5",
+              "Rd8+"
+            ],
+            "arrows": [
+              {
+                "from": "g8",
+                "to": "g5"
+              },
+              {
+                "from": "d1",
+                "to": "d8"
+              }
+            ],
+            "squares": [
+              "g5",
+              "d8"
+            ],
+            "motif": "skewer defense / winning the pawn safely"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 48,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2812,
+          "guess": {
+            "move": "Rxg5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "At the move rung it names Rxg5 and the idea of winning the g5 pawn while neutralizing the Rd8+ skewer, with depth suited to a 1684 player, though the claim that Rd8+ 'wins nothing' and the king-skewer explanation are somewhat muddled."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Rxg5 wins the pawn and takes the rook off g8, so the Rd8+ skewer disappears. Black stays active and keeps the extra material.\n\n- Rxb2 grabbed a pawn but left the king and the g8 rook lined up on the back rank. Rd8+ Ke7 Rxg8 then wins the rook, and the eval swings from +5.24 to -5.48.\n- Engine line: Rxg5 Rd7 Rf5+ Ke3 Rxb2 f3 Rb3+ Ke4 Kg8. Black can take b2 a move later, once the back-rank problem is solved.\n\nThe lasting idea: before grabbing a pawn, check whether your king and a rook share a line with an enemy rook. Ke8 and Ke7 are the only other moves the engine rates well, and they are clearly weaker.",
+            "moves": [
+              "Rxg5",
+              "Rxb2",
+              "Rd8+",
+              "Ke7",
+              "Rxg8",
+              "Rd7",
+              "Rf5+",
+              "Ke3",
+              "f3",
+              "Rb3+",
+              "Ke4",
+              "Kg8",
+              "Ke8"
+            ],
+            "arrows": [
+              {
+                "from": "g8",
+                "to": "g5"
+              },
+              {
+                "from": "d1",
+                "to": "d8"
+              }
+            ],
+            "squares": [
+              "g5",
+              "f8",
+              "g8",
+              "d1"
+            ],
+            "motif": "skewer / back-rank weakness"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 120,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3601,
+          "guess": {
+            "move": "Rxg5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The explain rung names the skewer and back-rank motif, gives the engine line and the eval swing, and ends with a long-term principle suited to a 1684 player, with no grading of the player."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Rc3",
+        "hit": false
+      }
+    },
+    {
+      "id": "186179398940-70",
+      "tags": [
+        "endgame",
+        "black",
+        "large-drop",
+        "repeated-motif"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"Rxg5\":\"A\",\"Rg6\":\"A\",\"Ke8\":\"B\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "multi-idea"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Rg7 offers a rook trade on the g-file and guards f7, but it walks into a skewer-style sequence. After Rh8+ Rg8, White plays Rd8+ and wins a rook for nothing after Rhxg8. The engine puts you at -5.64 here, so it's a real mistake. Look again at what White's rooks on the 7th and 8th ranks can do to your king and rook, and try another move.",
+            "moves": [
+              "Rg7",
+              "Rh8+",
+              "Rg8",
+              "Rd8+",
+              "Rhxg8"
+            ],
+            "arrows": [],
+            "squares": [],
+            "motif": "back-rank weakness"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 67,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2690,
+          "guess": {
+            "move": "Ke8",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It points at the White rooks on the 7th and 8th ranks and the back-rank danger without naming Rxg5 or the other candidates, and the short refutation line suits a 1684 player, though the eval figure adds a little padding."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Two questions to ask here. First, which of your pieces is loose, and which of White's pieces is the only thing keeping the position balanced? Second, how does your king's position on the back rank interact with White's rooks on the 7th and 8th ranks? The best move solves the king's safety and the pawn problem together.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "back-rank weakness"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 57,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1644,
+          "guess": {
+            "move": "Ke8",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply points at the back-rank weakness and the loose-piece question without naming or pointing to any move, which fits a nudge for a 1684 player."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Two things to look at. White's g5 pawn is the only thing cramping you, and it's only guarded by the king's position, not a piece. Also, your rook on g8 is the piece White's rooks keep targeting with checks on the 8th rank. Ask: can one of your pieces take something and also stop the checks from working?",
+            "moves": [],
+            "arrows": [],
+            "squares": [
+              "g5",
+              "g8",
+              "f8",
+              "h7",
+              "d7"
+            ],
+            "motif": "loose pawn"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 58,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1962,
+          "guess": {
+            "move": "Rxg5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": true,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It names the loose g5 pawn and the back-rank check danger, which conveys the idea, but highlighting g5 and asking whether a piece can take something points almost directly at Rxg5, so it borders on giving away the move."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is Rxg5. It wins the loose pawn and takes your rook off the g8 square, where the Rh8+ and Rd8+ checks were winning it. Your rook is now active on the g-file, and if White plays Rhxf7+ you answer Kg8, with counterplay against White's king and rooks.",
+            "moves": [
+              "Rxg5",
+              "Rhxf7+",
+              "Kg8"
+            ],
+            "arrows": [
+              {
+                "from": "g8",
+                "to": "g5"
+              }
+            ],
+            "squares": [
+              "g5",
+              "g8"
+            ],
+            "motif": "removing the target / winning a loose pawn"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 50,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2518,
+          "guess": {
+            "move": "Rxg5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "At the move rung it names the idea clearly (the g8 rook is under attack by Rh8+/Rd8+, and Rxg5 wins a loose pawn and activates the rook), with concise depth that suits a 1684 player."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Rxg5 grabs the loose pawn and pulls the rook off g8, so Rh8+ no longer skewers it. The engine line is Rxg5 Rhxf7+ Kg8 Rxb7 Rxb7 Rxb7 Rg1 Rb8+ Kh7 Re8 e5. Rooks come off, and your active rook and passed e-pawn keep it around 0.17.\n\n- Rg7 left both rooks on the back rank. After Rh8+ Rg8 Rd8+ Ke7 Rhxg8 f5 gxf6+ Kxf6 Rg4 Rb5 you are down 5.64.\n- Ke8 is the other safe choice (0.00). It gets the king off the checking squares, but it is more passive.\n\nThe lesson is that a king and rook lined up on the back rank invite a skewer. Fix the geometry first, and grab material if it also solves that.",
+            "moves": [
+              "Rxg5",
+              "Rh8+",
+              "Rg8",
+              "Rd8+",
+              "Rhxg8",
+              "Rhxf7+",
+              "Kg8",
+              "Rxb7",
+              "Rxb7",
+              "Rg1",
+              "Rb8+",
+              "Kh7",
+              "Re8",
+              "e5",
+              "Rg7",
+              "Ke7",
+              "f5",
+              "gxf6+",
+              "Kxf6",
+              "Rg4",
+              "Rb5",
+              "Ke8"
+            ],
+            "arrows": [
+              {
+                "from": "g8",
+                "to": "g5"
+              }
+            ],
+            "squares": [
+              "g5",
+              "g8",
+              "f8"
+            ],
+            "motif": "skewer / back-rank geometry"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 120,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 4232,
+          "guess": {
+            "move": "Rxg5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": true,
+            "note": "The reply names the skewer/back-rank motif and gives the engine line, but it pads with several bullets and a closing lesson, and its 'Rxg5 grabs the loose pawn' framing plus the 'lesson' paragraph reads as mildly corrective, so forcedStyle is flagged true for the extra padding beyond three points."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Rxf2",
+        "hit": false
+      }
+    },
+    {
+      "id": "186125417660-63",
+      "tags": [
+        "endgame",
+        "white",
+        "medium-drop",
+        "many-good"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"g3\":\"A\",\"Kf3\":\"A\",\"c3\":\"A\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "many-roads"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Bxa7 wins a pawn, but the engine rates it a mistake: the eval drops from +5.91 to +1.09. The problem is the bishop. After ...b6 it is cut off on a7, and the engine's line has White giving it back with Bxb6. Meanwhile your king on f4 is exposed to checks like ...Bg5+. Look for a move that deals with that king and the bishop on h4 first, rather than grabbing material. Want to try again?",
+            "moves": [
+              "Bxa7",
+              "Bxb6"
+            ],
+            "arrows": [],
+            "squares": [],
+            "motif": "king safety"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 76,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2132,
+          "guess": {
+            "move": "g3",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It points at the exposed king and the h4 bishop as the priority without naming a move, and the short line about ...b6 and Bxb6 suits a 1695 player, though 'deal with that king' leans slightly toward the Kf3 candidate."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Ask yourself what Black's pieces want to do next. Your king on f4 is in the open, and one of Black's bishops is already aimed at it. Before collecting material, which of your own pieces or squares is most in need of protection?",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "king safety"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 43,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 1911,
+          "guess": {
+            "move": "Ng5",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply points toward king safety and loose pieces without naming the move, but its claim that a Black bishop already aims at the Kf4 is inaccurate, since the h4 bishop targets g3 and f2 rather than the king."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 2,
+          "errors": [
+            "try 1: stage hint: text names the candidate move g3"
+          ],
+          "reply": {
+            "text": "Look at the bishop on h4. It is aimed at your king on f4 and can check from g5. Your king has few safe squares, and the bishop controls the diagonal behind it.\n\n- Which of your pawns could take away the bishop's scope?\n- Which square would it need to cover?",
+            "moves": [],
+            "arrows": [
+              {
+                "from": "h4",
+                "to": "e1"
+              }
+            ],
+            "squares": [
+              "h4",
+              "f4",
+              "g2"
+            ],
+            "motif": "king safety"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 52,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3857,
+          "guess": {
+            "move": "g3",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": true,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply names the Bh4 pin-like pressure on the king and asks the right question, but the arrow to e1 and the highlighted g2 pawn nearly point to the g3 answer, which crosses the hint rung."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is g3. It kicks the bishop off h4 and takes away the g5 check before Black can use it. After g3 the bishop must give up the diagonal, and your king gets a safe retreat on f3. Only then do the loose queenside pawns become a target. Black's checks stop being a problem, so the extra pieces keep counting.",
+            "moves": [
+              "g3"
+            ],
+            "arrows": [
+              {
+                "from": "g2",
+                "to": "g3"
+              },
+              {
+                "from": "g3",
+                "to": "h4"
+              }
+            ],
+            "squares": [
+              "g3",
+              "h4",
+              "g5"
+            ],
+            "motif": "prophylaxis"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 62,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2834,
+          "guess": {
+            "move": "g3",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "Names the idea (kicking the bishop off h4, removing the g5 check, king route to f3) at the move rung with appropriate depth for a 1695 player, though it pads slightly with a vague closing sentence."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "g3 works because it removes Black's only active idea. The pawn attacks the bishop on h4, and the king keeps f3 as a safe square. The extra material then keeps its value.\n\n- Bxa7 grabbed a pawn but allowed ...b6, which trapped the bishop. After g3 Bg5+ Kf3 Ra8 Bxb6 Rxb6 Nxg5 fxg5 b3 Re6, the eval falls to +1.09.\n- Engine line: g3 Rfe8 Kf3 Re4 Bxe4 Rxe4 Bf2. The king is safe and White stays far ahead.\n- Kf3 is close behind at +5.36 and shares the idea of getting the king off the bishop's diagonal.\n\nThe lesson is to secure the king first and collect pawns afterwards.",
+            "moves": [
+              "g3",
+              "Bxa7",
+              "b6",
+              "Bg5+",
+              "Kf3",
+              "Ra8",
+              "Bxb6",
+              "Rxb6",
+              "Nxg5",
+              "fxg5",
+              "b3",
+              "Re6",
+              "Rfe8",
+              "Re4",
+              "Bxe4",
+              "Rxe4",
+              "Bf2"
+            ],
+            "arrows": [
+              {
+                "from": "g2",
+                "to": "g3"
+              },
+              {
+                "from": "g3",
+                "to": "h4"
+              },
+              {
+                "from": "f4",
+                "to": "f3"
+              }
+            ],
+            "squares": [
+              "h4",
+              "g5",
+              "f3"
+            ],
+            "motif": "prophylaxis against checks"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 3,
+            "words": 110,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3686,
+          "guess": {
+            "move": "g3",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "At the explain rung it names the idea (removing Black's counterplay and securing the king on f3), walks through the played move's drawback and the engine line, and the depth suits a 1695 player, though the reply does pad with a few lines of evaluation numbers."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Bxf6",
+        "hit": false
+      }
+    },
+    {
+      "id": "186043154612-65",
+      "tags": [
+        "endgame",
+        "white",
+        "large-drop"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "mistake"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"Qh1\":\"A\",\"Qg1\":\"A\",\"Bc3\":\"B\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "many-roads"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Qa7 grabs for the c7 pawn, but it leaves the rook on h2 loose. Black's bishop on e5 already eyes it, and ...f3+ comes with check first.\n\n- After ...f3+ the king has to move, and then ...Bxh2 wins the rook. The engine puts Black well ahead, around -3.9.\n- Ask yourself what ...f3+ forces, and whether the queen can help guard the rook.\n\nWant to try another move?",
+            "moves": [
+              "Qa7"
+            ],
+            "arrows": [
+              {
+                "from": "e5",
+                "to": "h2"
+              },
+              {
+                "from": "f4",
+                "to": "f3"
+              }
+            ],
+            "squares": [],
+            "motif": "loose piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 69,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2336,
+          "guess": {
+            "move": "Qh1",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply names the loose rook on h2 and the ...f3+ check without naming a White move, though the queen-guarding hint and the f4-f3 arrow come close to pointing at the answer."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Look at the whole board before reaching for material. Your queen is far from the kingside, and one piece is attacked with tempo. Ask: which of my pieces needs protection, and which squares let the queen keep an eye on it while staying active?",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "loose piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 44,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2094,
+          "guess": {
+            "move": "Qg1",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": false,
+            "giveaway": false,
+            "depthFitsRating": false,
+            "forcedStyle": false,
+            "note": "The nudge is generic and vague: it says the queen is far from the kingside and a piece is attacked, but never names the actual idea (the f3+ check and Bxh2 exchange threat or the h2 rook/bishop tension), so it points at no concrete plan, and the 'loose piece' motif plus protection questions are too thin for a 1696 player."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The rook on h2 is the piece that matters. Black's bishop on e5 attacks it, and ...f3+ would drive your king away with tempo first.\n\n- Look at the h-file and the first rank: from which squares can your queen cover h2?\n- The queen on a1 is far from the kingside. Bring it back toward it.\n- Don't chase c7 yet, because the rook has to stay protected.",
+            "moves": [],
+            "arrows": [
+              {
+                "from": "e5",
+                "to": "h2"
+              },
+              {
+                "from": "f4",
+                "to": "f3"
+              }
+            ],
+            "squares": [
+              "h2",
+              "e5",
+              "f4",
+              "a1"
+            ],
+            "motif": "loose piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 3,
+            "words": 69,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2084,
+          "guess": {
+            "move": "Qh1",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The hint names the loose rook on h2 and the ...f3+ tempo without naming Qh1, though the claim that Be5 attacks h2 is wrong because the black pawn on f4 blocks that diagonal."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is Qh1. The queen steps back to the h1-a8 diagonal and the first rank, so the rook on h2 is guarded. After ...f3+ Ke3 Bxh2 Qxh2, you've traded rooks instead of losing one. You keep the balance (about +0.65) and the c7 pawn can wait. Qg1 is nearly as good, with the same idea.",
+            "moves": [
+              "Qh1",
+              "Qg1"
+            ],
+            "arrows": [
+              {
+                "from": "a1",
+                "to": "h1"
+              }
+            ],
+            "squares": [
+              "h1",
+              "h2"
+            ],
+            "motif": "loose piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 57,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2659,
+          "guess": {
+            "move": "Qh1",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "At the move rung it names Qh1 and the idea of guarding the h2 rook along the first rank and diagonal, with a short line and eval, which suits a 1696 player, though 'the c7 pawn can wait' and the 'loose piece' motif are light on long-term plan."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Qh1 works because it defends the rook on h2 before Black's tempo move arrives. That is the whole point of the position.\n\n- Why Qa7 fails: after ...f3+ the king moves and ...Bxh2 wins the rook for nothing. The engine has Black at about -3.9 for you after Qxc7 Bg4.\n- The line: Qh1 f3+ Ke3 Bxh2 Qxh2 Bg4. Rooks are traded, and you stay about +0.65 with e5 as a follow-up.\n\nQg1 shares the idea of guarding h2 and keeping the queen active. Check what is attacked with tempo before grabbing a pawn.",
+            "moves": [
+              "Qh1",
+              "Qa7",
+              "Qg1",
+              "Qxc7",
+              "Bg4"
+            ],
+            "arrows": [
+              {
+                "from": "a1",
+                "to": "h1"
+              },
+              {
+                "from": "e5",
+                "to": "h2"
+              },
+              {
+                "from": "f4",
+                "to": "f3"
+              }
+            ],
+            "squares": [
+              "h2",
+              "e5",
+              "h1"
+            ],
+            "motif": "loose piece"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 94,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3109,
+          "guess": {
+            "move": "Qh1",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The explain rung conveys the idea (defending h2 before the tempo move), why Qa7 loses to ...f3+ and ...Bxh2, and a short line with a motif, which suits a 1696 player, though the arrow and square data include a dubious a1-h1 arrow and the 'Qg1 shares the idea' aside is padding."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Qa7",
+        "hit": false
+      }
+    },
+    {
+      "id": "186131276790-63",
+      "tags": [
+        "endgame",
+        "white",
+        "small-drop",
+        "engine-disagreement?"
+      ],
+      "pure": [
+        {
+          "name": "verdict(best)=best",
+          "pass": true,
+          "detail": "best"
+        },
+        {
+          "name": "verdict(played)=mistake|inaccuracy",
+          "pass": true,
+          "detail": "inaccuracy"
+        },
+        {
+          "name": "idea grouping (unlabelled)",
+          "pass": null,
+          "detail": "{\"d5\":\"A\",\"dxc5\":\"A\",\"Rxc3\":\"B\"}"
+        },
+        {
+          "name": "moment type (unlabelled)",
+          "pass": null,
+          "detail": "only-move"
+        }
+      ],
+      "rungs": [
+        {
+          "stage": "attempt",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Rxc3 wins the pawn back and the engine still likes you (+4.35), but it is not the strongest try. It lets Black trade a pair of rooks with ...cxd4, and your extra material loses some of its bite. It also leaves Black's bishop and the c5/d4 tension alone, so Black gets counterplay. Look for a move that uses your space and the knight on e5 to keep the initiative. Want another try?",
+            "moves": [
+              "Rxc3"
+            ],
+            "arrows": [],
+            "squares": [],
+            "motif": "central pawn break"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 72,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2470,
+          "guess": {
+            "move": "dxc5",
+            "hit": false
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The reply points at the c5/d4 tension and the use of space without naming a move, and its concrete line about ...cxd4 suits a 1705 player, though the opening engine-score remark is slightly filler."
+          }
+        },
+        {
+          "stage": "nudge",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "Ask which Black pieces are tied to defending right now. The bishop on a6 and the rook on c7 both have jobs. What happens to them if you change the pawn structure in the center and take away the squares they rely on? Look for a move that keeps the tension in your favor rather than resolving it.",
+            "moves": [],
+            "arrows": [],
+            "squares": [],
+            "motif": "central pawn break"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 0,
+            "words": 58,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2580,
+          "guess": {
+            "move": "d5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "It points toward the central pawn break and the overloaded defenders without naming d5 or any destination square, which fits a nudge for a 1705 player, though 'keeps the tension' is slightly generic."
+          }
+        },
+        {
+          "stage": "hint",
+          "source": "llm",
+          "tries": 2,
+          "errors": [
+            "try 1: stage hint: text names the candidate move d5"
+          ],
+          "reply": {
+            "text": "Look at Black's e6 pawn and the rook on c7. Your knight on e5 eyes f7, and Black's pieces are short of squares.\n\n- Which of your pawns could hit e6 and pull a defender away?\n- Which line would that open toward f7, where your knight wants to land?",
+            "moves": [],
+            "arrows": [],
+            "squares": [
+              "e6",
+              "c7",
+              "f7",
+              "e5"
+            ],
+            "motif": "pawn break"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 50,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 4066,
+          "guess": {
+            "move": "d5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "Points at the e6 pawn break and the f7 landing square without naming d5 or an arrow, which fits the hint rung and a 1705 player's level."
+          }
+        },
+        {
+          "stage": "move",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "The best move is d5. It hits e6 and opens lines toward f7, where your knight on e5 wants to land.\n\n- After ...exd5 exd5, Black's rooks are overloaded: the d-pawn cuts off the bishop on a6 and the f7 square becomes a fork point.\n- Rxc3 can wait; the c3 pawn is not going anywhere useful.",
+            "moves": [
+              "d5",
+              "Rxc3"
+            ],
+            "arrows": [
+              {
+                "from": "d4",
+                "to": "d5"
+              },
+              {
+                "from": "e5",
+                "to": "f7"
+              }
+            ],
+            "squares": [
+              "e6",
+              "f7",
+              "c3"
+            ],
+            "motif": "pawn break"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 2,
+            "words": 57,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 2017,
+          "guess": {
+            "move": "d5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The move rung correctly names d5 and the pawn-break idea against e6 and the f7 square, with a short line and no grading of the player, though the claim that Black's rooks are overloaded is loosely supported and the reply is somewhat terse for a 1705 player."
+          }
+        },
+        {
+          "stage": "explain",
+          "source": "llm",
+          "tries": 1,
+          "errors": [],
+          "reply": {
+            "text": "d5 keeps the initiative and Rxc3 can wait. The engine line shows why.\n\n- After d5 exd5 exd5 Rcf7, Nxf7 Rxf7 Rxc3 Rxf4 you win the c3 pawn with tempo, and the d5 pawn cramps the bishop on a6.\n- Rxc3 allowed cxd4, trading a pair of rooks and loosening your grip (+4.35 vs +6.05).\n- dxc5 was also strong (+4.54), but d5 is the cleanest. It hits e6, opens lines toward f7 and overloads Black's rooks.",
+            "moves": [
+              "d5",
+              "Rxc3",
+              "cxd4",
+              "dxc5",
+              "exd5",
+              "exd5",
+              "Rcf7",
+              "Nxf7",
+              "Rxf7",
+              "Rxf4"
+            ],
+            "arrows": [
+              {
+                "from": "d4",
+                "to": "d5"
+              },
+              {
+                "from": "e5",
+                "to": "f7"
+              },
+              {
+                "from": "h3",
+                "to": "c3"
+              }
+            ],
+            "squares": [
+              "e6",
+              "f7",
+              "c3"
+            ],
+            "motif": "pawn break and overloaded defenders"
+          },
+          "leak": {
+            "illegalMoves": [],
+            "giveaway": [],
+            "pieceSquare": [],
+            "bullets": 3,
+            "words": 77,
+            "overWordCap": false,
+            "personWords": [],
+            "noCandidateNamed": false,
+            "pass": true
+          },
+          "ms": 3492,
+          "guess": {
+            "move": "d5",
+            "hit": true
+          },
+          "judge": {
+            "namesIdea": true,
+            "giveaway": false,
+            "depthFitsRating": true,
+            "forcedStyle": false,
+            "note": "The explain rung correctly names the pawn break and overloaded defenders, gives the line and why Rxc3 lost ground, and stays within three points without grading the player."
+          }
+        }
+      ],
+      "baseline": {
+        "move": "Rxc3",
+        "hit": false
+      }
+    }
+  ]
+}

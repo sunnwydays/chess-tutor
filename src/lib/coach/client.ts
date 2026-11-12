@@ -1,7 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { buildUserMessage, SYSTEM_PROMPT } from "./prompt";
 import { COACH_REPLY_SCHEMA, type CoachReply, type CoachRequest, type CoachResponse } from "./schema";
-import { fallbackReply, validateReply } from "./validate";
+import { decorateReply, fallbackReply, validateReply } from "./validate";
+import { ideaFeatures } from "@/lib/engine/ideas";
 import { judgeAttempt, type AttemptJudgement } from "./verdict";
 
 export const COACH_MODEL = "claude-sonnet-5-5";
@@ -39,7 +40,8 @@ async function callModel(messages: Anthropic.Beta.BetaMessageParam[]): Promise<C
 export async function generateCoachReply(req: CoachRequest): Promise<CoachResponse> {
   const judgement: AttemptJudgement | null =
     req.stage === "attempt" && req.attempt ? judgeAttempt(req.moment, req.attempt, req.attemptEvalCp) : null;
-  const user = buildUserMessage(req, judgement);
+  const features = ideaFeatures(req.moment);
+  const user = buildUserMessage(req, judgement, features);
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: user }];
   const allErrors: string[] = [];
 
@@ -51,9 +53,9 @@ export async function generateCoachReply(req: CoachRequest): Promise<CoachRespon
       allErrors.push(err instanceof Error ? err.message : String(err));
       break;
     }
-    const errors = validateReply(reply, req, judgement);
+    const errors = validateReply(reply, req, judgement, features);
     if (errors.length === 0) {
-      return { reply, source: "llm", attemptVerdict: judgement?.verdict ?? null, errors: allErrors.length ? allErrors : undefined };
+      return { reply: decorateReply(reply, req, features), source: "llm", attemptVerdict: judgement?.verdict ?? null, errors: allErrors.length ? allErrors : undefined };
     }
     allErrors.push(...errors.map((e) => `try ${attempt + 1}: ${e}`));
     messages.push(
@@ -66,7 +68,7 @@ export async function generateCoachReply(req: CoachRequest): Promise<CoachRespon
   }
 
   return {
-    reply: fallbackReply(req, judgement),
+    reply: fallbackReply(req, judgement, features),
     source: "fallback",
     attemptVerdict: judgement?.verdict ?? null,
     errors: allErrors,

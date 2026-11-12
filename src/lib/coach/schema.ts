@@ -1,7 +1,12 @@
 import type { MomentAnalysis } from "@/lib/engine/types";
 
-/** Rungs of the hint ladder, in order. */
-export const STAGES = ["attempt", "nudge", "hint", "move", "explain"] as const;
+/**
+ * Rungs of the hint ladder, in order. attempt: verdict on the tried move.
+ * focus: the area of the board (zone highlighted, other pieces faded).
+ * threat: the opponent's idea drawn as red arrows. piece: the piece that has
+ * to move (its square highlighted). move: the move. explain: the full picture.
+ */
+export const STAGES = ["attempt", "focus", "threat", "piece", "move", "explain"] as const;
 export type Stage = (typeof STAGES)[number];
 
 /** Server-side verdict on the user's attempt; the engine decides, not the LLM. */
@@ -10,6 +15,8 @@ export type AttemptVerdict = "best" | "good" | "inaccuracy" | "mistake" | "unkno
 export interface CoachArrow {
   from: string;
   to: string;
+  /** "threat" = the opponent's idea (drawn red); "move" = a move for the player (drawn green). */
+  kind: "threat" | "move";
 }
 
 /** What the LLM returns; the board renders it. */
@@ -18,9 +25,9 @@ export interface CoachReply {
   text: string;
   /** SAN moves the reply refers to (legal from the moment's position). */
   moves: string[];
-  /** Arrows to draw on the board. */
+  /** Arrows to draw on the board. Threat arrows only before the move rung. */
   arrows: CoachArrow[];
-  /** Squares to highlight. */
+  /** Squares to highlight. At focus (zone) and piece (from-squares) the server fills these from the engine. */
   squares: string[];
   /** Short tactical/positional motif tag, e.g. "pin", "back-rank weakness". Hidden until after the attempt. */
   motif: string;
@@ -38,10 +45,11 @@ export const COACH_REPLY_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["from", "to"],
+        required: ["from", "to", "kind"],
         properties: {
           from: { type: "string", pattern: "^[a-h][1-8]$" },
           to: { type: "string", pattern: "^[a-h][1-8]$" },
+          kind: { type: "string", enum: ["threat", "move"] },
         },
       },
     },

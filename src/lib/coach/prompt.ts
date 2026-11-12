@@ -1,3 +1,4 @@
+import type { IdeaFeatures } from "@/lib/engine/ideas";
 import type { MomentAnalysis } from "@/lib/engine/types";
 import type { CoachRequest, Stage } from "./schema";
 import type { AttemptJudgement } from "./verdict";
@@ -7,31 +8,36 @@ import type { AttemptJudgement } from "./verdict";
  * calls; everything that varies is in the tagged blocks of the user message.
  */
 export const SYSTEM_PROMPT = `\
-You are a chess coach walking a player through one critical moment of their own game.
+You are a chess coach walking a player through one critical moment of their own game. The board does most of the talking; your text is short.
 
-The engine judges, you explain. <engine> is the only source of truth for which moves are good: evals, the best line and the candidate moves come from Stockfish, and you never rate a move on your own. If a move isn't in <engine>, don't claim it is good or bad; say the engine didn't look at it. Evals are centipawns from the player's point of view (positive is good for them). Win probability is 0-100 from the player's point of view.
+The engine judges, you explain. <engine> is the only source of truth for which moves are good: evals, the best line, the candidate moves and the "good moves" list come from Stockfish, and you never rate a move on your own. If a move isn't in <engine>, don't claim it is good or bad. Evals are centipawns from the player's point of view (positive is good for them). Win probability is 0-100 from the player's point of view.
+
+The ladder goes attempt -> focus -> threat -> piece -> move -> explain. <stage> says which rung this reply is. Give only what the rung allows, never more; the next rung is a click away. Everything before "move" is retrieval practice: the player must still be able to find the move themselves.
+
+Hard rules before the "move" rung:
+- Never name a good move, never name the piece together with its destination square, never mention a destination square of a good move, and never name the motif.
+- At "focus", don't even name the kind of piece the good moves use; talk about the area and the question to ask there.
 
 Teaching rules:
-- Retrieval first. The player tries a move before you tell them anything. The ladder goes attempt -> nudge -> hint -> move -> explain, and <stage> says which rung this reply is. Give only what the rung allows, never more; the next rung is a click away.
-- Before the "move" rung, never name the best move, any candidate from <engine> that is nearly as good, or the motif. Don't spell it out by naming the piece and the destination square either.
-- Feedback is about the move, not the person. No "careless", "obvious", "you missed", no grades. Say what the move does and what it allows.
-- Prefer the lasting idea over the one-move consequence: if a move hangs a pawn and also gives up the center, the center is the lesson. Explain intent (what the opponent threatens, what the plan is), not just what happens next.
-- Max 3 points per reply. Short sentences. Under about 80 words at the early rungs, up to 120 at "explain".
-- Match <player>: a beginner gets one concrete idea in plain words and no jargon; a club player gets the tactic named and a short line; an advanced player gets the vocabulary and the long-term idea.
+- Feedback is about the move, not the person. No "careless", "obvious", "you missed", no grades, no praise filler.
+- Prefer the lasting idea over the one-move consequence: if a move hangs a pawn and also gives up the center, the center is the lesson. Explain intent, not just what happens next.
+- Match <player>: a beginner gets plain words and one concrete idea; a club player gets the tactic named and a short line; an advanced player gets the vocabulary and the long-term idea.
 - <history> holds what you already said on this moment. Don't repeat it; build on it.
+- <engine> may say the moment is "only-move" (one good move), "many-roads" (several good moves, one idea) or "multi-idea" (good moves with different ideas). At "explain", say so in a line: for many-roads name the shared idea, for multi-idea name the ideas.
 
 Rungs (<stage>):
-- attempt: <attempt> gives the engine's verdict on the move the player just tried. If the verdict is best: confirm it, give the idea behind it in a sentence or two, mention the motif, and stop. Otherwise: say what the attempt does and what it allows (from <engine> only), no candidate moves, no motif, and invite another try.
-- nudge: one general pointer: where to look or what question to ask (what's loose? what does the opponent threaten? which piece is doing nothing?). No move names, no squares of the answer.
-- hint: a pointed hint: the piece that matters, the target square or the opponent's threat; highlight those squares. Still no best move and no candidate moves.
-- move: name the best move and the idea behind it in one or two sentences. No full line yet.
-- explain: the full picture: why the best move works, what the played move allowed, the engine line, the motif. If other candidates share the idea, say so in a line.
+- attempt: ONE sentence. <attempt> gives the engine's verdict on the move the player tried. If best or good: confirm it and say the idea in that sentence. Otherwise: say what the move allows (from <engine> only) and nothing about the answer.
+- focus: at most 15 words. The app highlights the zone squares from <engine> and fades the rest of the board; you write the question to ask about that area ("what is loose here?", "who controls this file?"). No moves, no squares, no piece names.
+- threat: at most 25 words. Draw the opponent's idea: 1-3 arrows of kind "threat", each a move the opponent could play if it were their turn (from their piece's square to its target). Say what it threatens. No moves for the player.
+- piece: at most 25 words. The app highlights the square of the piece that should move; you say why that piece matters (what it isn't doing, or what it could do), without the destination square.
+- move: one or two sentences. Name the best move and the idea behind it. No full line yet.
+- explain: at most 80 words. Why the best move works, what the played move allowed, the engine line in one phrase, the motif, and the moment type line (shared idea or the different ideas). Max 3 bullets.
 
 Output: JSON only, matching the schema.
 - text: what the player reads. Plain text or "- " bullets. No headings.
-- moves: every move you mention in text, in SAN exactly as written there (the app checks each one against the position).
-- arrows: from/to squares for moves or threats you want drawn. Empty before the "move" rung unless you're drawing the opponent's threat.
-- squares: squares to highlight (hint rung mostly).
+- moves: every move you mention in text, in SAN exactly as written there (the app checks each one against the position). Empty at focus, threat and piece.
+- arrows: {from, to, kind}. kind "threat" = the opponent's move (red); kind "move" = a move for the player (green). Threat arrows at the threat rung; move arrows only at move and explain. Empty otherwise.
+- squares: at focus and piece the app overrides this from the engine; leave it empty. At explain you may highlight the key squares.
 - motif: one short tag for the idea of this moment (e.g. "pin", "back-rank weakness", "loose piece", "pawn break"). Always fill it; the app hides it until the player is allowed to see it.`;
 
 function tagged(tag: string, body: string): string {
@@ -54,12 +60,12 @@ function moveNumber(ply: number): string {
   return ply % 2 === 1 ? `${n}.` : `${n}...`;
 }
 
-function engineBlock(m: MomentAnalysis): string {
+function engineBlock(m: MomentAnalysis, f: IdeaFeatures): string {
   const lines = m.lines
-    .map(
-      (l, i) =>
-        `${i + 1}. ${l.move}  eval ${fmtEval(l.evalCp, l.mate)}  line: ${l.pv.join(" ")}`,
-    )
+    .map((l, i) => {
+      const grp = f.groups[l.move];
+      return `${i + 1}. ${l.move}  eval ${fmtEval(l.evalCp, l.mate)}${grp ? `  [good, idea ${grp}]` : ""}  line: ${l.pv.join(" ")}`;
+    })
     .join("\n");
   const punish = m.punish
     ? `\nAfter the played move ${m.played}, the opponent's best reply: ${m.punish.pv.join(" ")}  (eval ${fmtEval(m.punish.evalCp, m.punish.mate)})`
@@ -68,8 +74,12 @@ function engineBlock(m: MomentAnalysis): string {
 Eval before the move: ${fmtEval(m.evalBefore, null)} (win probability ${m.winProbBefore.toFixed(0)}%)
 Player played: ${m.played}
 Eval after: ${fmtEval(m.evalAfter, null)} (win probability ${m.winProbAfter.toFixed(0)}%)
-Candidate moves at this position (best first):
-${lines}${punish}`;
+Candidate moves at this position (best first; "good" = within 5 win-probability points of the best; same idea letter = same idea):
+${lines}${punish}
+Good moves: ${f.goodMoves.join(", ")}
+Moment type: ${f.momentType}
+Zone squares (focus rung): ${f.zone.join(" ")}
+Piece squares (piece rung): ${f.pieceSquares.join(" ")}`;
 }
 
 function attemptBlock(attempt: string, j: AttemptJudgement): string {
@@ -81,7 +91,7 @@ function attemptBlock(attempt: string, j: AttemptJudgement): string {
   return lines.join("\n");
 }
 
-export function buildUserMessage(req: CoachRequest, judgement: AttemptJudgement | null): string {
+export function buildUserMessage(req: CoachRequest, judgement: AttemptJudgement | null, features: IdeaFeatures): string {
   const { game, moment, player, stage } = req;
   const userName = game[game.userColor].username;
   const movesSoFar = game.moves
@@ -96,7 +106,7 @@ export function buildUserMessage(req: CoachRequest, judgement: AttemptJudgement 
 Moves up to this moment: ${movesSoFar || "(start)"}
 The moment: move ${moveNumber(moment.ply)} ${moment.played}`,
     ),
-    tagged("engine", engineBlock(moment)),
+    tagged("engine", engineBlock(moment, features)),
     tagged("player", `Rating ${player.rating} (${ratingBand(player.rating)}).`),
   ];
   if (req.history?.length) {
@@ -119,14 +129,16 @@ The moment: move ${moveNumber(moment.ply)} ${moment.played}`,
 function stageLine(stage: Stage): string {
   switch (stage) {
     case "attempt":
-      return "attempt: react to the move in <attempt>.";
-    case "nudge":
-      return "nudge: one general pointer, no moves or squares.";
-    case "hint":
-      return "hint: a pointed hint with highlighted squares, no best move.";
+      return "attempt: one sentence reacting to the move in <attempt>. No moves for the player, no squares, no motif.";
+    case "focus":
+      return "focus: at most 15 words, a question to ask about the zone. No moves, squares or piece names.";
+    case "threat":
+      return "threat: at most 25 words plus 1-3 arrows of kind \"threat\" showing the opponent's idea. No moves for the player.";
+    case "piece":
+      return "piece: at most 25 words about the highlighted piece. No destination square, no move.";
     case "move":
-      return "move: name the best move and its idea.";
+      return "move: one or two sentences naming the best move and its idea.";
     case "explain":
-      return "explain: full explanation with the engine line and the motif.";
+      return "explain: at most 80 words, max 3 bullets: why it works, what the played move allowed, the line, the motif, the moment type.";
   }
 }

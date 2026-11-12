@@ -79,22 +79,103 @@ export function momentType(m: MomentAnalysis): MomentType {
   return letters.size === 1 ? "many-roads" : "multi-idea";
 }
 
-/** Squares the good lines touch in the user's first two moves: the "zone" of the idea. */
-export function ideaZone(m: MomentAnalysis): string[] {
-  const squares = new Set<string>();
-  for (const l of goodLines(m)) {
-    const chess = new Chess(m.fenBefore);
-    for (const [i, san] of l.pv.slice(0, 3).entries()) {
-      try {
-        const mv = chess.move(san);
-        if (i % 2 === 0) {
-          squares.add(mv.from);
-          squares.add(mv.to);
-        }
-      } catch {
-        break;
-      }
+const FILES = "abcdefgh";
+
+/** The 3x3 neighbourhood of a square (clipped to the board). */
+function around(sq: string): string[] {
+  const f = FILES.indexOf(sq[0]);
+  const r = Number(sq[1]);
+  const out: string[] = [];
+  for (let df = -1; df <= 1; df++) {
+    for (let dr = -1; dr <= 1; dr++) {
+      const nf = f + df;
+      const nr = r + dr;
+      if (nf >= 0 && nf < 8 && nr >= 1 && nr <= 8) out.push(`${FILES[nf]}${nr}`);
     }
   }
-  return [...squares];
+  return out;
+}
+
+/**
+ * The "zone" for the focus rung: the part of the board where the idea happens.
+ * A blob around the destination squares of the good lines' first moves and the
+ * opponent's punishing reply, deliberately coarse so it points at an area, not
+ * a move. Deterministic, so the LLM can't widen or narrow it.
+ */
+export function ideaZone(m: MomentAnalysis): string[] {
+  const squares = new Set<string>();
+  const centers: string[] = [];
+  for (const l of goodLines(m)) {
+    const mv = moveInfo(m.fenBefore, l.move);
+    if (mv) centers.push(mv.to);
+  }
+  if (m.punish) {
+    const after = new Chess(m.fenBefore);
+    try {
+      after.move(m.played);
+      const mv = after.move(m.punish.move);
+      centers.push(mv.to);
+    } catch {}
+  }
+  for (const c of centers) for (const s of around(c)) squares.add(s);
+  return [...squares].sort();
+}
+
+/** The from-squares of the good lines' first moves: "the piece that has to move". */
+export function pieceSquares(m: MomentAnalysis): string[] {
+  const out = new Set<string>();
+  for (const l of goodLines(m)) {
+    const mv = moveInfo(m.fenBefore, l.move);
+    if (mv) out.add(mv.from);
+  }
+  return [...out].sort();
+}
+
+/** Piece letters (p, n, b, r, q, k) moved by the good lines' first moves. */
+export function hiddenPieces(m: MomentAnalysis): Set<string> {
+  const out = new Set<string>();
+  for (const l of goodLines(m)) {
+    const mv = moveInfo(m.fenBefore, l.move);
+    if (mv) out.add(mv.piece);
+  }
+  return out;
+}
+
+/** The FEN with the side to move flipped (en passant cleared), so the opponent's threats can be listed. */
+export function flipTurn(fen: string): string {
+  const parts = fen.split(" ");
+  parts[1] = parts[1] === "w" ? "b" : "w";
+  parts[3] = "-";
+  return parts.join(" ");
+}
+
+/** Is from->to a legal move for the opponent if it were their turn? (A "threat" arrow must be one.) */
+export function isOpponentThreat(fen: string, from: string, to: string): boolean {
+  try {
+    const chess = new Chess(flipTurn(fen));
+    return chess.moves({ verbose: true }).some((mv) => mv.from === from && mv.to === to);
+  } catch {
+    return false;
+  }
+}
+
+/** Everything the prompt and the board need, computed once per moment. */
+export interface IdeaFeatures {
+  momentType: MomentType;
+  /** Line SAN -> group letter over the good lines only. */
+  groups: Record<string, string>;
+  goodMoves: string[];
+  zone: string[];
+  pieceSquares: string[];
+}
+
+export function ideaFeatures(m: MomentAnalysis): IdeaFeatures {
+  const good = goodLines(m);
+  return {
+    momentType: momentType(m),
+    groups: groupLines(m, good),
+    goodMoves: good.map((l) => l.move),
+    zone: ideaZone(m),
+    pieceSquares: pieceSquares(m),
+  };
 }
