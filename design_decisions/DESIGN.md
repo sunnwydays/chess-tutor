@@ -89,6 +89,18 @@ The evals turn prompt engineering from "read a few replies and guess" into a tes
 
 The failures tell you what to fix. A leak check names the exact square or move that leaked, the judge's note says why a reply missed the idea, and a high retry or fallback rate on one rung means that rung's instructions are unclear. The idea-grouping rule went through the same loop: a move-order rule looked sensible, but it lowered agreement with my labels from 19/22 to 14/22, so it was dropped.
 
+## Current limitations
+
+- **Shallow engine.** Depth 10 per ply and MultiPV 3 at depth 14 on critical positions keep analysis fast in the browser, but deep tactics can be missed and only 3 candidate lines exist. An attempt outside those 3 gets an "unknown" verdict instead of an eval.
+- **Single-threaded WASM.** It's slow on low-end devices, and every game is analysed on the client.
+- **Moment selection is "where I erred", not "what I should study".** It's purely the win-probability drop on one move, so it ignores time trouble, repeated patterns across games, and how hard the position felt (see the controls finding above).
+- **The piece rung still gives a lot away.** Haiku guesses the move about half the time once the piece is highlighted ([EVAL_FINDINGS.md](EVAL_FINDINGS.md)).
+- **Heuristics with known misses.** Moment type matches my labels 18/26: positional moments with one broad idea across different pieces look like "multi-idea" to the structural rule.
+- **A small, one-player eval set.** 39 cases and 31 labelled moments, all from my games at one rating band. The Haiku judge is only checked against hand grades for the Form A rubric.
+- **Prose validation is regex-based.** It catches SAN and square names, but not descriptive phrasing like "the knight jumps into the king's side".
+- **One move per attempt, no reasoning.** The coach sees what was played, not why, and there's no free chat.
+- **Local-only state.** The analysis cache, review queue and logs live in localStorage and local JSONL, so they're per browser. Review runs on a virtual clock for the demo, and color swap is the only perturbation.
+
 ## Not in scope (yet)
 
-See [NEXT_STEPS.md](NEXT_STEPS.md): cross-game pattern report, level 3 as its own box, LLM-proposed perturbations checked by the engine, a "why" box next to the attempt, opponent analysis, logging real use as new eval cases.
+See [NEXT_STEPS.md](NEXT_STEPS.md).
