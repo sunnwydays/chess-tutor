@@ -33,13 +33,42 @@ const NOTICE_LABEL: Record<NonNullable<CoachResponse["notice"]> | "none", string
 const SAN_RE = /(?<![A-Za-z0-9])(O-O-O|O-O|[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+#]?)(?![A-Za-z0-9])/g;
 
 /** Resolve a SAN against the position; null when it isn't a legal move there. */
-function resolveSan(fen: string, san: string): HoverMove | null {
+export function resolveSan(fen: string, san: string): HoverMove | null {
   try {
     const m = new Chess(fen).move(san);
     return { from: m.from, to: m.to };
   } catch {
     return null;
   }
+}
+
+/** A SAN that previews its arrow on the board while hovered or focused. */
+export function MoveLink({
+  san,
+  move,
+  onHoverMove,
+  className,
+}: {
+  san: string;
+  move: HoverMove;
+  onHoverMove?: (m: HoverMove | null) => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      className={cx(
+        "rounded-sm font-mono text-accent underline decoration-dotted underline-offset-2 hover:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60",
+        className,
+      )}
+      onMouseEnter={() => onHoverMove?.(move)}
+      onMouseLeave={() => onHoverMove?.(null)}
+      onFocus={() => onHoverMove?.(move)}
+      onBlur={() => onHoverMove?.(null)}
+    >
+      {san}
+    </button>
+  );
 }
 
 function prefersReducedMotion(): boolean {
@@ -104,19 +133,7 @@ function ReplyText({
     const move = canHover(san) ? resolveSan(fen, san) : null;
     if (!move) continue;
     if (idx > last) parts.push(body.slice(last, idx));
-    parts.push(
-      <button
-        key={idx}
-        type="button"
-        className="rounded-sm font-mono text-accent underline decoration-dotted underline-offset-2 hover:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
-        onMouseEnter={() => onHoverMove?.(move)}
-        onMouseLeave={() => onHoverMove?.(null)}
-        onFocus={() => onHoverMove?.(move)}
-        onBlur={() => onHoverMove?.(null)}
-      >
-        {san}
-      </button>,
-    );
+    parts.push(<MoveLink key={idx} san={san} move={move} onHoverMove={onHoverMove} />);
     last = idx + san.length;
   }
   parts.push(body.slice(last));

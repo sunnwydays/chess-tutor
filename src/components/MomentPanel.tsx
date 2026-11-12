@@ -19,7 +19,7 @@ import type { UciEngine } from "@/lib/engine/uci";
 import { rungsFor, type LadderOutcome, type Level } from "@/lib/review/session";
 import { who } from "@/lib/me";
 import { ARROW_COLOR, type BoardArrow } from "./Board";
-import CoachReply, { CoachThinking, type HoverMove } from "./CoachReply";
+import CoachReply, { CoachThinking, MoveLink, resolveSan, type HoverMove } from "./CoachReply";
 import EngineLine, { buildLineSteps } from "./EngineLine";
 import HintLadder, { type LadderStep } from "./HintLadder";
 import LeadUp, { buildLeadUp } from "./LeadUp";
@@ -465,6 +465,7 @@ export default function MomentPanel({
 
   const canSkip = hasAttempt && !taken("move") && !solved;
   const played = who(me).played;
+  const playedMove = resolveSan(moment.fenBefore, moment.played);
   const dropped = moment.winProbAfter < moment.winProbBefore;
 
   return (
@@ -564,7 +565,11 @@ export default function MomentPanel({
         {ended.current && (
           <Card className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3.5 py-3">
             <span className="text-sm text-muted">{played}</span>
-            <span className="font-mono text-sm text-fg">{moment.played}</span>
+            {playedMove ? (
+              <MoveLink san={moment.played} move={playedMove} onHoverMove={setHover} className="text-sm" />
+            ) : (
+              <span className="font-mono text-sm text-fg">{moment.played}</span>
+            )}
             <Chip tone={dropped ? "danger" : "neutral"} className="ml-auto">
               Win chance {moment.winProbBefore.toFixed(0)}% → {moment.winProbAfter.toFixed(0)}%
             </Chip>
