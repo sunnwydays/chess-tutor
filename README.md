@@ -100,3 +100,7 @@ Built with Claude Code. Boilerplate and UI went to subagents; the prompt, valida
 - `src/components/` board, lesson, moment panel (ladder), idea question, find the moment
 - `evals/`, `scripts/` eval cases, moment scan, eval runners
 - `design_decisions/` the docs above
+
+```
+hi
+```
