@@ -7,6 +7,13 @@ export async function GET(req: Request) {
   if (!user) {
     return NextResponse.json({ error: "Missing ?user=" }, { status: 400 });
   }
+  // Chess.com usernames: letters, digits, "_" and "-" only.
+  if (!/^[A-Za-z0-9_-]{2,25}$/.test(user)) {
+    return NextResponse.json(
+      { error: "Usernames can only contain letters, numbers, _ and -." },
+      { status: 400 },
+    );
+  }
   try {
     const [games, stats] = await Promise.all([fetchRecentGames(user), fetchStats(user)]);
     return NextResponse.json({ games, stats });
