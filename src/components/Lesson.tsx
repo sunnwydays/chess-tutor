@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import GameViewer from "./GameViewer";
-import MomentPanel from "./MomentPanel";
+import MomentPanel, { type LadderEnd } from "./MomentPanel";
+import type { MomentAnalysis } from "@/lib/engine/types";
+import { enqueueMoment } from "@/lib/review/feed";
 import type { GameContext } from "@/lib/coach/schema";
 import { useGameAnalysis } from "@/lib/engine/useGameAnalysis";
 import { parseMoves } from "@/lib/pgn";
@@ -23,6 +25,7 @@ export default function Lesson({ game }: Props) {
   const state = useGameAnalysis(game.id, moves, game.userColor);
   const [selected, setSelected] = useState(0);
   const [replay, setReplay] = useState(false);
+  const [queued, setQueued] = useState<Record<number, boolean>>({});
 
   const ctx: GameContext = useMemo(
     () => ({
@@ -37,6 +40,13 @@ export default function Lesson({ game }: Props) {
     [game, moves],
   );
   const rating = game[game.userColor].rating;
+
+  function onEnd(m: MomentAnalysis, end: LadderEnd) {
+    // Found it cold: nothing to review. Any hint or a shown move -> queue it.
+    if (end.solved && end.hintsTaken === 0) return;
+    enqueueMoment({ id: `${game.id}-${m.ply}`, gameId: game.id, game: ctx, moment: m, rating }, end.motif);
+    setQueued((q) => ({ ...q, [m.ply]: true }));
+  }
 
   if (state.status === "idle" || state.status === "running") {
     const pct = state.status === "running" ? Math.round((100 * state.done) / state.total) : 0;
@@ -91,7 +101,24 @@ export default function Lesson({ game }: Props) {
         <GameViewer game={game} />
       ) : (
         moments[selected] && (
-          <MomentPanel key={moments[selected].ply} game={ctx} moment={moments[selected]} player={{ rating }} />
+          <div className="flex flex-col gap-2">
+            <MomentPanel
+              key={moments[selected].ply}
+              game={ctx}
+              moment={moments[selected]}
+              player={{ rating }}
+              logBase={{ gameId: game.id }}
+              onEnd={(end) => onEnd(moments[selected], end)}
+            />
+            {queued[moments[selected].ply] && (
+              <p className="text-sm text-emerald-400">
+                Added to your review queue. It comes back with less help.{" "}
+                <a href="/review" className="underline">
+                  Review
+                </a>
+              </p>
+            )}
+          </div>
         )
       )}
     </div>

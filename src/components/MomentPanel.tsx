@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import type { MomentAnalysis } from "@/lib/engine/types";
 import type {
@@ -13,6 +13,8 @@ import type {
   PlayerContext,
   Stage,
 } from "@/lib/coach/schema";
+import { logEvent, type LogEventInput } from "@/lib/log";
+import { rungsFor, type LadderOutcome, type Level } from "@/lib/review/session";
 import type { BoardArrow } from "./Board";
 
 const Board = dynamic(() => import("./Board"), { ssr: false });
@@ -23,10 +25,26 @@ interface Exchange {
   response: CoachResponse;
 }
 
+export interface LadderEnd extends LadderOutcome {
+  /** Coach's motif tag for the moment (idea tag fallback when unlabelled). */
+  motif: string;
+}
+
 interface Props {
   game: GameContext;
   moment: MomentAnalysis;
   player: PlayerContext;
+  /** Assistance level (spaced repetition dial). 5 and 4 = full ladder; lessons use 5. */
+  level?: Level;
+  mode?: "lesson" | "review";
+  /** Extra fields on every log row (gameId, reviewItemId, positionKind, virtualClock). */
+  logBase?: Partial<LogEventInput>;
+  /** Fires once: a good/best attempt (solved) or the move shown (not solved). */
+  onEnd?: (end: LadderEnd) => void;
+  /** Review: hide what was played and the win-chance drop (that is a hint). */
+  hideResult?: boolean;
+  /** Level 5: the moves that led here, shown above the board. */
+  context?: string;
 }
 
 const VERDICTS: Record<AttemptVerdict, { label: string; cls: string }> = {
@@ -56,13 +74,27 @@ const STAGE_LABEL: Record<Stage, string> = {
 
 const ARROW_COLOR = { threat: "rgba(239,68,68,0.8)", move: "rgba(34,197,94,0.8)" } as const;
 
-export default function MomentPanel({ game, moment, player }: Props) {
+const HINT_STAGES: Stage[] = ["focus", "threat", "piece", "move", "explain"];
+
+export default function MomentPanel({ game, moment, player, level = 5, mode = "lesson", logBase, onEnd, hideResult, context }: Props) {
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [boardKey, setBoardKey] = useState(0);
+  const startedAt = useRef(Date.now());
+  const firstAttemptMs = useRef<number | null>(null);
+  const ended = useRef(false);
+  useEffect(() => {
+    startedAt.current = Date.now();
+  }, []);
 
   const taken = (s: Stage) => exchanges.some((e) => e.stage === s);
+  const allowed = rungsFor(level);
+  const hintsIn = (xs: Exchange[]) => xs.filter((e) => HINT_STAGES.includes(e.stage)).length;
+
+  function log(row: Partial<LogEventInput>) {
+    logEvent({ mode, ply: moment.ply, level, ...logBase, ...row });
+  }
   const latest = exchanges.length > 0 ? exchanges[exchanges.length - 1] : null;
 
   async function send(stage: Stage, attempt?: string) {
@@ -84,7 +116,30 @@ export default function MomentPanel({ game, moment, player }: Props) {
       if (!res.ok || "error" in data) {
         throw new Error("error" in data ? data.error : "Request failed");
       }
-      setExchanges((prev) => [...prev, { stage, attempt, response: data }]);
+      const next = [...exchanges, { stage, attempt, response: data }];
+      setExchanges(next);
+      const hintsTaken = hintsIn(next);
+      const validationResult = data.source === "fallback" ? "fallback" : data.errors?.length ? "regenerated" : "ok";
+      log({
+        stage,
+        attempt,
+        verdict: data.attemptVerdict ?? undefined,
+        hintsTaken,
+        msToFirstAttempt: firstAttemptMs.current ?? undefined,
+        validationResult,
+      });
+      const solved = stage === "attempt" && (data.attemptVerdict === "best" || data.attemptVerdict === "good");
+      if (!ended.current && (solved || stage === "move")) {
+        ended.current = true;
+        const end: LadderEnd = {
+          solved,
+          hintsTaken,
+          msToFirstAttempt: firstAttemptMs.current ?? 0,
+          motif: next.map((e) => e.response.reply.motif).filter(Boolean).pop() ?? "",
+        };
+        log({ stage: "end", verdict: solved ? "solved" : "shown", hintsTaken, msToFirstAttempt: end.msToFirstAttempt });
+        onEnd?.(end);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Request failed");
     } finally {
@@ -101,6 +156,7 @@ export default function MomentPanel({ game, moment, player }: Props) {
     } catch {
       return false;
     }
+    if (firstAttemptMs.current === null) firstAttemptMs.current = Date.now() - startedAt.current;
     void send("attempt", san);
     return true;
   }
@@ -142,18 +198,26 @@ export default function MomentPanel({ game, moment, player }: Props) {
             Move {n}
             {dots} — what would you play?
           </h2>
-          <p className="text-sm text-zinc-500">
-            You played {moment.played} ({moment.winProbBefore.toFixed(0)}% -&gt;{" "}
-            {moment.winProbAfter.toFixed(0)}% win chance)
-          </p>
+          {context && <p className="text-sm text-zinc-400">Leading up to it: {context}</p>}
+          {(!hideResult || ended.current) && (
+            <p className="text-sm text-zinc-500">
+              You played {moment.played} ({moment.winProbBefore.toFixed(0)}% -&gt;{" "}
+              {moment.winProbAfter.toFixed(0)}% win chance)
+            </p>
+          )}
+          {level < 4 && (
+            <p className="text-xs text-zinc-500">
+              {level === 3 ? "Hints up to the piece." : "No hints this time: one try, or show the answer."}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {RUNGS.map((r) => (
+          {RUNGS.filter((r) => allowed.includes(r.stage) || (r.stage === "explain" && taken("move"))).map((r) => (
             <button
               key={r.stage}
               className={btn}
-              disabled={loading || !taken(r.needs)}
+              disabled={loading || taken(r.stage) || !taken(r.needs)}
               onClick={() => void send(r.stage)}
             >
               {r.label}
@@ -161,10 +225,10 @@ export default function MomentPanel({ game, moment, player }: Props) {
           ))}
           <button
             className="text-sm text-zinc-400 underline hover:text-zinc-200 disabled:opacity-40 disabled:no-underline"
-            disabled={loading || !taken("attempt")}
+            disabled={loading || !taken("attempt") || taken("move")}
             onClick={() => void send("move")}
           >
-            Skip to the move
+            {allowed.includes("move") ? "Skip to the move" : "Show the answer"}
           </button>
         </div>
 
