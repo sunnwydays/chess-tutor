@@ -1,11 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import type { MomentAnalysis } from "@/lib/engine/types";
 import type {
-  AttemptVerdict,
   CoachRequest,
   CoachResponse,
   CoachTurn,
@@ -18,7 +17,13 @@ import { normSan } from "@/lib/coach/verdict";
 import { createBrowserEngine } from "@/lib/engine/browser";
 import type { UciEngine } from "@/lib/engine/uci";
 import { rungsFor, type LadderOutcome, type Level } from "@/lib/review/session";
-import type { BoardArrow } from "./Board";
+import { who } from "@/lib/me";
+import { ARROW_COLOR, type BoardArrow } from "./Board";
+import CoachReply, { CoachThinking, type HoverMove } from "./CoachReply";
+import EngineLine, { buildLineSteps } from "./EngineLine";
+import HintLadder, { type LadderStep } from "./HintLadder";
+import LeadUp, { buildLeadUp } from "./LeadUp";
+import { Button, Card, Chip, Eyebrow, cx } from "./ui";
 
 const Board = dynamic(() => import("./Board"), { ssr: false });
 
@@ -44,46 +49,22 @@ interface Props {
   logBase?: Partial<LogEventInput>;
   /** Fires once: a good/best attempt (solved) or the move shown (not solved). */
   onEnd?: (end: LadderEnd) => void;
-  /** Unused: the played move is now hidden everywhere until the ladder ends. */
-  hideResult?: boolean;
-  /** Level 5: the moves that led here, shown above the board. */
-  context?: string;
+  /** Viewer owns these games -> "you" wording. Default false. */
+  me?: boolean;
+  /** Show the interactive replay of the moves leading up to the position (lessons, and review level 5). Default false. */
+  leadUp?: boolean;
 }
 
-const VERDICTS: Record<AttemptVerdict, { label: string; cls: string }> = {
-  best: { label: "Best move", cls: "bg-emerald-700 text-white" },
-  good: { label: "Good move", cls: "bg-teal-700 text-white" },
-  inaccuracy: { label: "Inaccuracy", cls: "bg-amber-600 text-white" },
-  mistake: { label: "Mistake", cls: "bg-red-700 text-white" },
-  unknown: { label: "Not in the top lines", cls: "bg-zinc-700 text-zinc-200" },
-};
+/** Which position the board shows. The ladder only works on the moment itself. */
+type View = { kind: "moment" } | { kind: "leadup"; ply: number } | { kind: "line"; k: number };
 
-const RUNGS: { stage: Stage; label: string; needs: Stage }[] = [
-  { stage: "focus", label: "Where to look", needs: "attempt" },
-  { stage: "threat", label: "What they threaten", needs: "focus" },
-  { stage: "piece", label: "Which piece", needs: "threat" },
-  { stage: "move", label: "Show the move", needs: "piece" },
-  { stage: "explain", label: "Explain", needs: "move" },
+const RUNGS: { stage: Stage; label: string; action: string; needs: Stage }[] = [
+  { stage: "focus", label: "Where to look", action: "Where to look", needs: "attempt" },
+  { stage: "threat", label: "What they threaten", action: "What do they threaten?", needs: "focus" },
+  { stage: "piece", label: "Which piece", action: "Which piece?", needs: "threat" },
+  { stage: "move", label: "The move", action: "Show the move", needs: "piece" },
+  { stage: "explain", label: "Explain", action: "Explain", needs: "move" },
 ];
-
-/** Why a reply is engine-only. The ladder still works; only the wording comes from code. */
-const NOTICE_LABEL: Record<NonNullable<CoachResponse["notice"]> | "none", string> = {
-  none: "engine-only reply",
-  "rate-limited": "engine-only reply: the demo's AI limit is reached, try again in a few minutes",
-  budget: "engine-only reply: the demo's AI budget is used up",
-  unavailable: "engine-only reply: the AI coach is offline",
-};
-
-const STAGE_LABEL: Record<Stage, string> = {
-  attempt: "Attempt",
-  focus: "Where to look",
-  threat: "What they threaten",
-  piece: "Which piece",
-  move: "Move",
-  explain: "Explain",
-};
-
-const ARROW_COLOR = { threat: "rgba(239,68,68,0.8)", move: "rgba(34,197,94,0.8)" } as const;
 
 const HINT_STAGES: Stage[] = ["focus", "threat", "piece", "move", "explain"];
 
@@ -93,11 +74,34 @@ const ATTEMPT_TIMEOUT_MS = 4000;
 
 type AttemptEval = Pick<CoachRequest, "attemptEvalCp" | "attemptLine">;
 
-export default function MomentPanel({ game, moment, player, level = 5, mode = "lesson", logBase, onEnd, context }: Props) {
+/** Destination square of a SAN from a position, or null. */
+function destOf(fen: string, san: string): string | null {
+  try {
+    return new Chess(fen).move(san).to;
+  } catch {
+    return null;
+  }
+}
+
+export default function MomentPanel({
+  game,
+  moment,
+  player,
+  level = 5,
+  mode = "lesson",
+  logBase,
+  onEnd,
+  me = false,
+  leadUp = false,
+}: Props) {
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
   const [loading, setLoading] = useState(false);
+  /** The rung being fetched, so its placeholder card shows under the right step. */
+  const [pending, setPending] = useState<{ stage: Stage; attempt?: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [boardKey, setBoardKey] = useState(0);
+  const [view, setView] = useState<View>({ kind: "moment" });
+  const [hover, setHover] = useState<HoverMove | null>(null);
   const startedAt = useRef(Date.now());
   const firstAttemptMs = useRef<number | null>(null);
   const ended = useRef(false);
@@ -124,6 +128,55 @@ export default function MomentPanel({ game, moment, player, level = 5, mode = "l
   const isSolved = (xs: Exchange[]) =>
     xs.some((e) => e.stage === "attempt" && (e.response.attemptVerdict === "best" || e.response.attemptVerdict === "good"));
   const solved = isSolved(exchanges);
+
+  const explained = taken("explain");
+  // The engine line (and SAN previews of any move) only exist from the move rung on.
+  const showLine = explained || taken("move");
+  const top = moment.lines[0];
+
+  // Replays for the two "viewing another position" modes.
+  const leadSteps = useMemo(() => (leadUp ? buildLeadUp(game.moves, moment.ply) : []), [leadUp, game.moves, moment.ply]);
+  const lineSteps = useMemo(
+    () => (showLine && top ? buildLineSteps(moment.fenBefore, top.pv) : []),
+    [showLine, top, moment.fenBefore],
+  );
+
+  const viewing = view.kind !== "moment";
+
+  function stepView(delta: number) {
+    setView((v) => {
+      if (v.kind === "leadup") {
+        const ply = v.ply + delta;
+        if (ply > leadSteps.length) return { kind: "moment" };
+        return { kind: "leadup", ply: Math.max(1, ply) };
+      }
+      if (v.kind === "line") return { kind: "line", k: Math.min(lineSteps.length, Math.max(0, v.k + delta)) };
+      return v;
+    });
+  }
+
+  // One keydown handler for both viewing modes; only one is ever active.
+  useEffect(() => {
+    if (view.kind === "moment") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target;
+      if (t instanceof HTMLElement && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        stepView(-1);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        stepView(1);
+      } else if (e.key === "Escape") {
+        setView({ kind: "moment" });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // stepView closes over the step counts only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view.kind, leadSteps.length, lineSteps.length]);
 
   async function fetchCoach(stage: Stage, xs: Exchange[], attempt?: string, extra?: AttemptEval): Promise<CoachResponse> {
     const history: CoachTurn[] = xs.map((e) => ({
@@ -179,8 +232,10 @@ export default function MomentPanel({ game, moment, player, level = 5, mode = "l
 
   async function send(stage: Stage, attempt?: string) {
     setLoading(true);
+    setPending({ stage, attempt });
     setError(null);
     setConfirmSkip(false);
+    setHover(null);
     const key = `${exchanges.length}|${stage}`;
     try {
       const pre = attempt ? undefined : prefetched.current.get(key);
@@ -215,6 +270,7 @@ export default function MomentPanel({ game, moment, player, level = 5, mode = "l
       setError(err instanceof Error ? err.message : "Request failed");
     } finally {
       setLoading(false);
+      setPending(null);
       setBoardKey((k) => k + 1);
     }
   }
@@ -232,142 +288,239 @@ export default function MomentPanel({ game, moment, player, level = 5, mode = "l
     return true;
   }
 
+  // ---- Board state ----
   const arrows: BoardArrow[] = (latest?.response.reply.arrows ?? []).map((a) => ({
     startSquare: a.from,
     endSquare: a.to,
     color: ARROW_COLOR[a.kind] ?? ARROW_COLOR.move,
   }));
+  // SAN hover preview is drawn last (on top).
+  if (hover) arrows.push({ startSquare: hover.from, endSquare: hover.to, color: ARROW_COLOR.hover });
   // Tunnel vision: the focus zone stays lit (rest faded) through the threat rung.
   const focusEx = exchanges.find((e) => e.stage === "focus");
   const focus = focusEx && (latest?.stage === "focus" || latest?.stage === "threat") ? focusEx.response.reply.squares : undefined;
   const motif = latest?.response.reply.motif ?? "";
   const showMotif = taken("attempt") && motif.trim() !== "";
-  const explained = taken("explain");
-  const showLine = explained || taken("move");
-  const top = moment.lines[0];
+
+  // Pulse: the piece to move at the piece rung, the destination at move/explain.
+  let pulse: string[] = [];
+  if (latest?.stage === "piece") pulse = latest.response.reply.squares;
+  else if (latest?.stage === "move" || latest?.stage === "explain") {
+    const dest =
+      latest.response.reply.arrows.filter((a) => a.kind === "move").pop()?.to ?? (top ? destOf(moment.fenBefore, top.move) : null);
+    if (dest) pulse = [dest];
+  }
+  const highlight = latest && latest.stage !== "focus" && latest.stage !== "piece" ? latest.response.reply.squares : [];
+
+  let boardFen = moment.fenBefore;
+  let lastMove: { from: string; to: string } | undefined;
+  if (view.kind === "leadup") {
+    const s = leadSteps[view.ply - 1];
+    if (s) {
+      boardFen = s.fen;
+      lastMove = { from: s.from, to: s.to };
+    }
+  } else if (view.kind === "line" && view.k > 0) {
+    const s = lineSteps[view.k - 1];
+    if (s) {
+      boardFen = s.fen;
+      lastMove = { from: s.from, to: s.to };
+    }
+  }
 
   const n = Math.ceil(moment.ply / 2);
   const dots = moment.ply % 2 === 0 ? "..." : ".";
-  const btn = "rounded bg-zinc-800 px-3 py-1 hover:bg-zinc-700 disabled:opacity-40";
-  const chip = "rounded px-2 py-0.5 text-xs";
+  const backToMoment = () => setView({ kind: "moment" });
+
+  // ---- Ladder steps ----
+  const card = (e: Exchange, i: number) => (
+    <CoachReply
+      key={i}
+      stage={e.stage}
+      attempt={e.attempt}
+      response={e.response}
+      moment={moment}
+      me={me}
+      animate={i === exchanges.length - 1}
+      hoverAll={showLine}
+      onHoverMove={setHover}
+    />
+  );
+  const cardsFor = (stage: Stage) =>
+    exchanges.map((e, i) => (e.stage === stage ? card(e, i) : null)).filter((c) => c !== null);
+
+  const hasAttempt = taken("attempt");
+  const attemptBody = (
+    <>
+      {!hasAttempt && pending?.stage !== "attempt" && (
+        <p className="flex items-center gap-2 text-sm text-fg-2">
+          <span className="relative flex size-2">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-60" />
+            <span className="relative inline-flex size-2 rounded-full bg-accent" />
+          </span>
+          Play a move on the board.
+        </p>
+      )}
+      {cardsFor("attempt")}
+      {pending?.stage === "attempt" && <CoachThinking attempt={pending.attempt} />}
+      {solved && !explained && pending?.stage !== "explain" && (
+        <Card className="animate-pop border-accent/30 bg-accent/5 p-3.5">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <Button size="sm" variant="primary" disabled={loading} onClick={() => void send("explain")}>
+              Show the full explanation
+            </Button>
+            <span className="text-sm text-muted">or find another good move on the board.</span>
+          </div>
+        </Card>
+      )}
+    </>
+  );
+
+  const steps: LadderStep[] = [
+    { key: "attempt", label: "Attempt", status: hasAttempt ? "done" : "available", children: attemptBody },
+  ];
+  if (solved) {
+    // Solved: the remaining rungs are hidden; Explain appears once asked for.
+    if (explained || pending?.stage === "explain") {
+      steps.push({
+        key: "explain",
+        label: "Explain",
+        status: explained ? "done" : "available",
+        children: (
+          <>
+            {cardsFor("explain")}
+            {pending?.stage === "explain" && <CoachThinking />}
+          </>
+        ),
+      });
+    }
+  } else {
+    for (const r of RUNGS.filter((r) => allowed.includes(r.stage) || (r.stage === "explain" && taken("move")))) {
+      const isTaken = taken(r.stage);
+      const isPending = pending?.stage === r.stage;
+      const cards = cardsFor(r.stage);
+      steps.push({
+        key: r.stage,
+        label: r.label,
+        status: isTaken ? "done" : taken(r.needs) ? "available" : "locked",
+        action: isPending ? undefined : { label: r.action, onClick: () => void send(r.stage), disabled: loading },
+        children:
+          cards.length > 0 || isPending ? (
+            <>
+              {cards}
+              {isPending && <CoachThinking />}
+            </>
+          ) : undefined,
+      });
+    }
+  }
+
+  const canSkip = hasAttempt && !taken("move") && !solved;
+  const played = who(me).played;
+  const dropped = moment.winProbAfter < moment.winProbBefore;
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row">
-      <div className="w-full max-w-[520px]">
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+      <div className="w-full shrink-0 lg:sticky lg:top-6 lg:w-[560px] xl:w-[600px]">
         <Board
           key={boardKey}
-          fen={moment.fenBefore}
+          fen={boardFen}
           orientation={game.userColor}
-          arrows={arrows}
-          highlightSquares={latest?.stage === "focus" ? [] : (latest?.response.reply.squares ?? [])}
-          focus={focus}
-          onMove={onMove}
+          // Other positions are read-only and drop every hint overlay.
+          arrows={viewing ? [] : arrows}
+          highlightSquares={viewing ? [] : highlight}
+          focus={viewing ? undefined : focus}
+          pulseSquares={viewing ? [] : pulse}
+          lastMove={lastMove}
+          onMove={viewing ? undefined : onMove}
         />
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
-        <div>
-          <h2 className="text-lg font-medium">
-            Move {n}
-            {dots} — what would you play?
-          </h2>
-          {context && <p className="text-sm text-zinc-400">Leading up to it: {context}</p>}
-          {ended.current && (
-            <p className="text-sm text-zinc-500">
-              Played in the game: {moment.played} ({moment.winProbBefore.toFixed(0)}% -&gt;{" "}
-              {moment.winProbAfter.toFixed(0)}% win chance)
-            </p>
-          )}
-          {level < 4 && (
-            <p className="text-xs text-zinc-500">
-              {level === 3 ? "Hints up to the piece." : "No hints this time: one try, or show the answer."}
-            </p>
-          )}
-        </div>
 
-        {solved ? (
-          <div className="flex flex-wrap items-center gap-2">
-            {!explained && (
-              <button className={btn} disabled={loading} onClick={() => void send("explain")}>
-                Show the full explanation
-              </button>
-            )}
-            <span className="text-sm text-zinc-400">or find another good move on the board.</span>
+      <div className="flex min-w-0 flex-1 flex-col gap-5">
+        <header className="flex flex-col gap-1.5">
+          <Eyebrow>
+            Move {n}
+            {dots}
+          </Eyebrow>
+          <h2 className="text-xl font-semibold tracking-tight">What would you play?</h2>
+          {level < 4 && (
+            <div className="pt-1">
+              <Chip tone="info">{level === 3 ? "Hints up to the piece." : "No hints this time: one try, or show the answer."}</Chip>
+            </div>
+          )}
+        </header>
+
+        {leadUp && (
+          <LeadUp
+            steps={leadSteps}
+            active={view.kind === "leadup" ? view.ply : null}
+            onSelect={(ply) => setView({ kind: "leadup", ply })}
+            onPrev={() => setView((v) => (v.kind === "leadup" ? { kind: "leadup", ply: Math.max(1, v.ply - 1) } : { kind: "leadup", ply: leadSteps.length }))}
+            onNext={() => stepView(1)}
+            onBack={backToMoment}
+          />
+        )}
+
+        {viewing && (
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm text-muted">Viewing another position</span>
+            <Button size="sm" variant="primary" onClick={backToMoment}>
+              Back to the position
+            </Button>
           </div>
-        ) : (
-        <div className="flex flex-wrap items-center gap-2">
-          {RUNGS.filter((r) => allowed.includes(r.stage) || (r.stage === "explain" && taken("move"))).map((r) => (
-            <button
-              key={r.stage}
-              className={btn}
-              disabled={loading || taken(r.stage) || !taken(r.needs)}
-              onClick={() => void send(r.stage)}
-            >
-              {r.label}
-            </button>
-          ))}
-          {taken("attempt") && !taken("move") && !confirmSkip && (
-            <button
-              className="text-sm text-zinc-400 underline hover:text-zinc-200 disabled:opacity-40 disabled:no-underline"
-              disabled={loading}
-              onClick={() => setConfirmSkip(true)}
-            >
-              {allowed.includes("move") ? "Skip to the move" : "Show the answer"}
-            </button>
-          )}
-          {confirmSkip && (
-            <span className="flex items-center gap-2 text-sm text-zinc-300">
-              Show the answer now? It counts as not found.
-              <button className={btn} disabled={loading} onClick={() => void send("move")}>
-                Show it
-              </button>
-              <button className="text-zinc-400 underline hover:text-zinc-200" onClick={() => setConfirmSkip(false)}>
-                Keep trying
-              </button>
-            </span>
-          )}
-        </div>
         )}
 
         {showMotif && (
           <div>
-            <span className={`${chip} bg-zinc-800 text-zinc-300`}>Motif: {motif}</span>
+            <Chip tone="neutral">Motif: {motif}</Chip>
           </div>
         )}
 
-        <div className="flex flex-col gap-3">
-          {exchanges.map((e, i) => {
-            const verdict = e.response.attemptVerdict ? VERDICTS[e.response.attemptVerdict] : null;
-            return (
-              <div key={i} className="rounded border border-zinc-800 p-3 text-sm">
-                <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <span className={`${chip} bg-zinc-800 text-zinc-300`}>
-                    {e.stage === "attempt" ? `Attempt ${e.attempt ?? ""}` : STAGE_LABEL[e.stage]}
-                  </span>
-                  {e.stage === "attempt" && verdict && (
-                    <span className={`${chip} ${verdict.cls}`}>{verdict.label}</span>
-                  )}
-                  {e.stage === "attempt" && e.attempt && normSan(e.attempt) === normSan(moment.played) && (
-                    <span className={`${chip} bg-zinc-700 text-zinc-100`}>Same move as in the game</span>
-                  )}
-                  {e.response.source === "fallback" && (
-                    <span className="text-xs text-zinc-500">{NOTICE_LABEL[e.response.notice ?? "none"]}</span>
-                  )}
-                </div>
-                <p className="whitespace-pre-wrap">{e.response.reply.text}</p>
-              </div>
-            );
-          })}
-          {loading && <p className="animate-pulse text-sm text-zinc-400">Coach is thinking...</p>}
-          {error && <p className="text-sm text-red-400">{error}</p>}
+        <div>
+          {/* Ladder only works on the moment itself, not while viewing a replay. */}
+          <div inert={viewing} className={cx("transition-opacity", viewing && "opacity-40")}>
+            <HintLadder steps={steps} />
+
+            {canSkip && !confirmSkip && (
+              <Button variant="ghost" size="sm" className="mt-3 text-muted" disabled={loading} onClick={() => setConfirmSkip(true)}>
+                {allowed.includes("move") ? "Skip to the move" : "Show the answer"}
+              </Button>
+            )}
+            {canSkip && confirmSkip && (
+              <Card className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 p-3 text-sm text-fg-2">
+                Show the answer now? It counts as not found.
+                <span className="flex items-center gap-2">
+                  <Button size="sm" variant="secondary" disabled={loading} onClick={() => void send("move")}>
+                    Show it
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setConfirmSkip(false)}>
+                    Keep trying
+                  </Button>
+                </span>
+              </Card>
+            )}
+          </div>
+          {error && <p className="mt-3 text-sm text-danger">{error}</p>}
         </div>
 
         {showLine && top && (
-          <div className="rounded bg-zinc-900 p-3">
-            <div className="mb-1 text-xs text-zinc-500">Engine line</div>
-            <div className="font-mono text-xs text-zinc-400">
-              {(top.evalCp / 100).toFixed(2)} {top.pv.join(" ")}
-            </div>
-          </div>
+          <EngineLine
+            line={top}
+            steps={lineSteps}
+            k={view.kind === "line" ? view.k : null}
+            onSelect={(k) => setView({ kind: "line", k })}
+            onBack={backToMoment}
+          />
+        )}
+
+        {ended.current && (
+          <Card className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3.5 py-3">
+            <span className="text-sm text-muted">{played}</span>
+            <span className="font-mono text-sm text-fg">{moment.played}</span>
+            <Chip tone={dropped ? "danger" : "neutral"} className="ml-auto">
+              Win chance {moment.winProbBefore.toFixed(0)}% → {moment.winProbAfter.toFixed(0)}%
+            </Chip>
+          </Card>
         )}
       </div>
     </div>

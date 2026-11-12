@@ -9,6 +9,13 @@ export interface BoardArrow {
   color: string;
 }
 
+/** Arrow colors: threat = opponent's idea, move = a move for the player, hover = SAN hover preview. */
+export const ARROW_COLOR = {
+  threat: "rgba(240,97,109,0.85)",
+  move: "rgba(110,231,167,0.9)",
+  hover: "rgba(127,180,255,0.9)",
+} as const;
+
 interface Props {
   fen: string;
   orientation: "white" | "black";
@@ -20,9 +27,25 @@ interface Props {
   onSquareClick?: (square: string) => void;
   /** Tunnel vision: when set, every other square (and its piece) is faded. */
   focus?: string[];
+  /** Key squares drawn with a pulsing green ring. */
+  pulseSquares?: string[];
+  /** Soft accent tint on both squares of a move (replays, engine line stepping). */
+  lastMove?: { from: string; to: string };
 }
 
-export default function Board({ fen, orientation, arrows, highlightSquares, highlightColor, onMove, onSquareClick, focus }: Props) {
+// The pulse-ring keyframes live in globals.css (top level, always emitted).
+export default function Board({
+  fen,
+  orientation,
+  arrows,
+  highlightSquares,
+  highlightColor,
+  onMove,
+  onSquareClick,
+  focus,
+  pulseSquares,
+  lastMove,
+}: Props) {
   const squareStyles: Record<string, CSSProperties> = {};
   // squareStyles land on a div inside the colored square, so a translucent
   // background tints the square and filter dims the piece on it.
@@ -41,12 +64,27 @@ export default function Board({ fen, orientation, arrows, highlightSquares, high
       }
     }
   }
+  if (lastMove) {
+    for (const sq of [lastMove.from, lastMove.to]) {
+      squareStyles[sq] = { ...squareStyles[sq], backgroundColor: "rgba(110,231,167,0.35)" };
+    }
+  }
   for (const sq of highlightSquares ?? []) squareStyles[sq] = { ...squareStyles[sq], ...highlight };
+  for (const sq of pulseSquares ?? []) {
+    squareStyles[sq] = {
+      ...squareStyles[sq],
+      boxShadow: "inset 0 0 0 3px rgba(110,231,167,0.95)",
+      animation: "pulse-ring 1.6s ease-out infinite",
+    };
+  }
 
   // The board grid is height:100%; in a stretched flex row that makes rows spread apart.
   // A square wrapper pins the height to the width.
   return (
-    <div style={{ aspectRatio: "1 / 1", width: "100%" }}>
+    <div
+      className="overflow-hidden rounded-card border border-line shadow-[0_20px_50px_-24px_rgba(0,0,0,0.8)]"
+      style={{ aspectRatio: "1 / 1", width: "100%" }}
+    >
       <Chessboard
         options={{
           position: fen,
