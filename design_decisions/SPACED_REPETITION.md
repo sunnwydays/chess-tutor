@@ -137,6 +137,14 @@ Same log as the lesson. Add: `mode: "lesson" | "review"`, `reviewItemId`, `posit
 
 Everything else is engine plus pure functions.
 
+## As built (Nov 11)
+
+- Box -> level ([session.ts](../src/lib/review/session.ts)): box 0 -> 5 the first time, 4 after a miss; box 1 -> 1 (Form A) if labelled, else 2; box 2 -> 0 (Form B) if a scan record exists, else 2. Form A's grade picks the ladder start (2/3/4); Form B correct -> 2, else 4.
+- Rep verdict: Form A correct = right-idea, Form B correct = noticed. Otherwise the ladder decides, and right-move needs zero hints. Success moves the item up one box, a miss resets it to 0, and a memorized rep stays in the same box.
+- Idea tag = the most specific motif from the label's idea text (the rubric's motif vocabulary), else the coach's motif from the lesson. Siblings share that tag; 26 of 31 labelled moments have one.
+- One control stream per session (slot 2). Its result is logged only; it doesn't touch the queue.
+- Level 5 context is the last 6 moves, not an LLM line yet.
+
 ## Scope
 
 v0 (demo):

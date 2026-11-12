@@ -57,7 +57,9 @@ Models: Sonnet 5.5 as the coach (adaptive thinking, medium effort), Haiku 5.5 as
 - Lessons come only from the player's **own recent games**, and only from **their** moves.
 - Rating comes from the game's own time class, so the explanation depth matches how they actually play.
 - A scan script ([find_moments.ts](../scripts/find_moments.ts)) runs the engine over the recent games and saves each critical moment plus two quiet "control" positions per game. I labelled these on a `/label` page: my cold guess, whether I sensed the mistake, the idea, the opponent's motif, the zone, and which engine lines share an idea. Those labels are the ground truth for the evals below.
-- Spaced repetition is built as logic but not wired into the UI yet ([SPACED_REPETITION.md](SPACED_REPETITION.md)): missed moments come back on a Leitner schedule with less help each time, using a different moment from the player's own games with the same idea so it can't just be memorized.
+- Spaced repetition ([SPACED_REPETITION.md](SPACED_REPETITION.md)): a lesson moment that needed hints goes into a Leitner queue on a virtual clock, and the `/review` tab serves it back with less help each time. Box 0 gets the full ladder (with the moves that led to it the first time). Box 1 asks you to explain the idea in words (Form A). Box 2 asks you to find the moment in a stream of moves with no eval (Form B). Each session includes one control stream where "nothing wrong" is the right answer. After the first rep it serves a sibling, meaning another of your moments with the same motif tag, read from the labels by the rubric's motif vocabulary. Failing that it serves the original with colors swapped, so the position can't just be memorized.
+- **Form A grading stays in code.** Haiku only extracts claims (ideas, squares, pieces, opponent threats) as JSON, and chess.js drops squares and pieces that aren't on the board. Pure code then scores idea / zone / opponent motif against the label, and a fixed rule gives incorrect / missing details / correct. You get one follow-up question aimed at the weakest dimension, built from a template so it can't leak the answer.
+- Every attempt, rung, form answer and finished rep is one JSONL log row (`msToFirstAttempt`, `hintsTaken`, `level`, `positionKind`, `virtualClock`). These are the numbers you'd tune the ladder and the schedule on.
 
 ## Evals
 
@@ -88,4 +90,4 @@ The failures tell you what to fix. A leak check names the exact square or move t
 
 ## Not in scope (yet)
 
-See [NEXT_STEPS.md](NEXT_STEPS.md): cross-game pattern report, spaced repetition in the UI, a "why" box next to the attempt, opponent analysis, logging real use as new eval cases.
+See [NEXT_STEPS.md](NEXT_STEPS.md): cross-game pattern report, level 3 as its own box, LLM-proposed perturbations checked by the engine, a "why" box next to the attempt, opponent analysis, logging real use as new eval cases.
