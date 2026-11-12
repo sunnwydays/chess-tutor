@@ -1,12 +1,12 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Chess } from "chess.js";
 import type { AttemptVerdict, CoachResponse, Stage } from "@/lib/coach/schema";
 import type { MomentAnalysis } from "@/lib/engine/types";
 import { normSan } from "@/lib/coach/verdict";
 import { who } from "@/lib/me";
-import { Card, Chip, Spinner, TextSkeleton } from "./ui";
+import { Card, Chip, Spinner, TextSkeleton, cx } from "./ui";
 
 export interface HoverMove {
   from: string;
@@ -141,17 +141,23 @@ interface ReplyProps {
   /** Moves may be previewed from the move rung onwards (engine line shown). */
   hoverAll: boolean;
   onHoverMove?: (m: HoverMove | null) => void;
+  /** Pulse the card (the player repeated this attempt instead of getting a new reply). */
+  flash?: boolean;
 }
 
-export default function CoachReply({ stage, attempt, response, moment, me, animate, hoverAll, onHoverMove }: ReplyProps) {
+export default function CoachReply({ stage, attempt, response, moment, me, animate, hoverAll, onHoverMove, flash }: ReplyProps) {
   const verdict = stage === "attempt" && response.attemptVerdict ? VERDICTS[response.attemptVerdict] : null;
   const isPlayed = stage === "attempt" && attempt && normSan(attempt) === normSan(moment.played);
   const hasHeader = stage === "attempt" || response.source === "fallback";
   // Before the move rung only the attempted move itself may be previewed.
   const canHover = (san: string) => hoverAll || (stage === "attempt" && !!attempt && normSan(san) === normSan(attempt));
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (flash) ref.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [flash]);
 
   return (
-    <Card className="animate-fade-up p-3.5">
+    <Card ref={ref} className={cx("animate-fade-up p-3.5", flash && "flash-ring border-accent/60")}>
       {hasHeader && (
         <div className="mb-2 flex flex-wrap items-center gap-2">
           {stage === "attempt" && attempt && <Chip className="font-mono text-fg">{attempt}</Chip>}

@@ -4,7 +4,7 @@
  * Shared UI primitives. Every page and component builds from these so the
  * look stays consistent: one button scale, one card, one chip, one skeleton.
  */
-import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ComponentPropsWithRef, HTMLAttributes, ReactNode } from "react";
 
 function cx(...parts: (string | false | null | undefined)[]): string {
   return parts.filter(Boolean).join(" ");
@@ -47,7 +47,7 @@ export function Button({ variant = "secondary", size = "md", className, ...rest 
   );
 }
 
-export function Card({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
+export function Card({ className, ...rest }: ComponentPropsWithRef<"div">) {
   return <div {...rest} className={cx("rounded-card border border-line bg-surface", className)} />;
 }
 

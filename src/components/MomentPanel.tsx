@@ -13,7 +13,7 @@ import type {
   Stage,
 } from "@/lib/coach/schema";
 import { logEvent, type LogEventInput } from "@/lib/log";
-import { normSan } from "@/lib/coach/verdict";
+import { judgeAttempt, normSan } from "@/lib/coach/verdict";
 import { createBrowserEngine } from "@/lib/engine/browser";
 import type { UciEngine } from "@/lib/engine/uci";
 import { rungsFor, type LadderOutcome, type Level } from "@/lib/review/session";
@@ -102,6 +102,8 @@ export default function MomentPanel({
   const [boardKey, setBoardKey] = useState(0);
   const [view, setView] = useState<View>({ kind: "moment" });
   const [hover, setHover] = useState<HoverMove | null>(null);
+  /** Index of the attempt card to pulse when the same move is played again. */
+  const [flash, setFlash] = useState<number | null>(null);
   const startedAt = useRef(Date.now());
   const firstAttemptMs = useRef<number | null>(null);
   const ended = useRef(false);
@@ -111,11 +113,19 @@ export default function MomentPanel({
   const prefetched = useRef(new Map<string, Promise<CoachResponse>>());
   useEffect(() => {
     startedAt.current = Date.now();
+    // Likely first attempts (the best/good moves) are fetched as soon as the moment opens.
+    prefetchAttempts([]);
     return () => {
       engine.current?.terminate();
       engine.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {
+    if (flash === null) return;
+    const t = setTimeout(() => setFlash(null), 1600);
+    return () => clearTimeout(t);
+  }, [flash]);
 
   const taken = (s: Stage) => exchanges.some((e) => e.stage === s);
   const allowed = rungsFor(level);
@@ -213,6 +223,30 @@ export default function MomentPanel({
     prefetched.current.set(key, p);
   }
 
+  const attemptKey = (n: number, san: string) => `${n}|attempt|${normSan(san)}`;
+
+  /**
+   * Attempts that would solve the moment (best/good lines) get their reply
+   * fetched ahead: all of them (max 3) when the moment opens, only the best
+   * move after each hint. These moves are in the MultiPV set, so the request
+   * is identical to the one `send` would make (no in-browser analysis needed).
+   */
+  function prefetchAttempts(xs: Exchange[]) {
+    if (isSolved(xs)) return;
+    const solving = moment.lines.filter((l) => {
+      const v = judgeAttempt(moment, l.move).verdict;
+      return v === "best" || v === "good";
+    });
+    const targets = xs.length === 0 ? solving.slice(0, 3) : solving.slice(0, 1);
+    for (const l of targets) {
+      const key = attemptKey(xs.length, l.move);
+      if (prefetched.current.has(key)) continue;
+      const p = fetchCoach("attempt", xs, l.move);
+      p.catch(() => prefetched.current.delete(key));
+      prefetched.current.set(key, p);
+    }
+  }
+
   /** Engine eval + reply line for an attempt outside the MultiPV set, so the coach can say what it allows. */
   async function analyseAttempt(san: string): Promise<AttemptEval> {
     if (moment.lines.some((l) => normSan(l.move) === normSan(san)) || normSan(moment.played) === normSan(san)) return {};
@@ -236,13 +270,14 @@ export default function MomentPanel({
     setError(null);
     setConfirmSkip(false);
     setHover(null);
-    const key = `${exchanges.length}|${stage}`;
+    const key = attempt ? attemptKey(exchanges.length, attempt) : `${exchanges.length}|${stage}`;
     try {
-      const pre = attempt ? undefined : prefetched.current.get(key);
+      const pre = prefetched.current.get(key);
       const data = pre ? await pre : await fetchCoach(stage, exchanges, attempt, attempt ? await analyseAttempt(attempt) : undefined);
       const next = [...exchanges, { stage, attempt, response: data }];
       setExchanges(next);
       prefetch(next);
+      prefetchAttempts(next);
       const hintsTaken = hintsIn(next);
       const validationResult = data.source === "fallback" ? "fallback" : data.errors?.length ? "regenerated" : "ok";
       log({
@@ -281,6 +316,13 @@ export default function MomentPanel({
     try {
       san = new Chess(moment.fenBefore).move({ from, to, promotion: "q" }).san;
     } catch {
+      return false;
+    }
+    // Same move again: no new reply, just point at the one it already got.
+    const seen = exchanges.findIndex((e) => e.stage === "attempt" && e.attempt && normSan(e.attempt) === normSan(san));
+    if (seen >= 0) {
+      setFlash(seen);
+      setBoardKey((k) => k + 1);
       return false;
     }
     if (firstAttemptMs.current === null) firstAttemptMs.current = Date.now() - startedAt.current;
@@ -344,6 +386,7 @@ export default function MomentPanel({
       animate={i === exchanges.length - 1}
       hoverAll={showLine}
       onHoverMove={setHover}
+      flash={flash === i}
     />
   );
   const cardsFor = (stage: Stage) =>
