@@ -99,6 +99,7 @@ The failures tell you what to fix. A leak check names the exact square or move t
 - **A small, one-player eval set.** 39 cases and 31 labelled moments, all from my games at one rating band. The Haiku judge is only checked against hand grades for the Form A rubric.
 - **Prose validation is regex-based.** It catches SAN and square names, but not descriptive phrasing like "the knight jumps into the king's side".
 - **One move per attempt, no reasoning.** The coach sees what was played, not why, and there's no free chat.
+- **Demo limits.** The Claude routes are rate limited (60 calls per IP per 10 min, 1500 a day; tunable through env vars). The counters live in memory, so on Vercel each server instance counts separately. That's fine for a demo but would need a shared store like Redis in production. When the limit is hit, there's no API key, or the key's budget is spent, the ladder keeps going with engine-only replies and a note saying why. The idea question shows the labelled idea so the player can check their own answer.
 - **Local-only state.** The analysis cache, review queue and logs live in localStorage and local JSONL, so they're per browser. Review runs on a virtual clock for the demo, and color swap is the only perturbation.
 
 ## Not in scope (yet)
