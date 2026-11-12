@@ -7,6 +7,7 @@ import {
   motifTags,
   regrade,
   scoreClaims,
+  textMatch,
   validateClaims,
   weakestDimension,
   type Claims,
@@ -114,6 +115,16 @@ describe("scoreClaims + grade", () => {
       squares: ["e5", "f3", "d3", "g3"],
     });
     expect(scoreClaims(c, LABEL).idea).toBe("hit");
+  });
+
+  it("stems and escape phrases match paraphrases of Sunny's labels", () => {
+    expect(textMatch(["promoting the a2 pawn"], "Promote pawn.")).toBe("hit");
+    expect(textMatch(["save the knight with ne5"], "get the knight out of trouble and toward more important places")).toBe(
+      "hit",
+    );
+    expect(
+      textMatch(["black develops and stays a pawn up"], "opponent easily defends and develops, up material"),
+    ).toBe("hit");
   });
 
   it("vague answer is incorrect", () => {

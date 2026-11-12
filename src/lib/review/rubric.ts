@@ -145,14 +145,14 @@ const MOTIFS: Record<string, string[]> = {
   mate: ["mate", "checkmate", "mating net", "mate threat"],
   check: ["check", "checks", "with check", "with tempo", "tempo"],
   "pawn-break": ["pawn break", "break", "push", "advance", "lever"],
-  "passed-pawn": ["passed pawn", "passer", "promote", "promotion", "queening"],
+  "passed-pawn": ["passed pawn", "passer", "promote", "promoting", "promotion", "queening", "queen the pawn"],
   "weak-square": ["weak square", "outpost", "hole"],
   "weak-pawn": ["weak pawn", "isolated", "backward pawn", "doubled pawns", "target the pawn"],
   trade: ["trade", "trades", "exchange", "exchanging", "swap", "simplify", "liquidate"],
   develop: ["develop", "development", "get the pieces out", "bring the pieces out"],
   centralize: ["centralize", "centralise", "center", "centre", "central"],
   defend: ["defend", "defence", "defense", "protect", "cover", "guard", "block", "hold"],
-  escape: ["escape", "move the queen", "move the piece", "step away", "retreat", "get out", "out of the"],
+  escape: ["escape", "move the queen", "move the piece", "step away", "retreat", "get out", "out of the", "out of trouble", "save the", "rescue", "to safety"],
   activity: ["activate", "active", "activity", "improve the", "better square", "reroute"],
   space: ["space", "cramp", "restrict", "clamp"],
   zugzwang: ["zugzwang"],
@@ -181,7 +181,8 @@ export function normalizeText(text: string): string {
 
 function stem(w: string): string {
   if (w.length <= 4) return w;
-  return w.replace(/(ing|ers|ed|es|s|ly)$/, "");
+  // "promote" and "promoting" both -> "promot".
+  return w.replace(/(ing|ers|ed|es|s|ly)$/, "").replace(/e$/, "");
 }
 
 const PIECE_WORDS: Record<string, string> = {
@@ -205,6 +206,7 @@ for (const [canon, words] of Object.entries({
   defend: "defend defends defending defended protect protects protecting protected guard guards guarding guarded",
   capture: "capture captures capturing captured take takes taking win wins winning grab grabs",
   move: "move moves moving moved go goes put",
+  opponent: "opponent opponent's opponents black white enemy",
 })) {
   for (const w of words.split(" ")) SYNONYMS[w] = canon;
 }
@@ -251,8 +253,8 @@ function overlap<T>(a: Set<T>, b: Set<T>): number {
 }
 
 /**
- * Score a free-text label against the player's phrases. The better of motif
- * tag overlap and content-word overlap decides: >= 0.6 hit. Partial needs a
+ * Score a free-text label against the player's phrases. Hit: motif tags or
+ * content words >= 0.6 overlap, or words >= 0.5 plus a shared tag. Partial needs a
  * shared motif tag or 2+ shared content words, so naming one piece ("a
  * tactic with the knight") earns nothing.
  */
@@ -269,7 +271,7 @@ export function textMatch(claims: string[], label: string | undefined, extraToke
   const tokHits = overlap(labelTokens, claimTokens);
   const tagScore = labelTags.size ? tagHits / labelTags.size : 0;
   const tokScore = labelTokens.size ? tokHits / labelTokens.size : 0;
-  if (Math.max(tagScore, tokScore) >= 0.6) return "hit";
+  if (Math.max(tagScore, tokScore) >= 0.6 || (tokScore >= 0.5 && tagHits > 0)) return "hit";
   if (tagHits > 0 || tokHits >= Math.min(2, labelTokens.size)) return "partial";
   return "miss";
 }

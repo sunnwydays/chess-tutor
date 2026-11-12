@@ -1,41 +1,328 @@
 {
-  "_readme": "Form A rubric eval. One entry per moment: the /label ground truth plus 3-4 frozen player answers with hand grades. scripts/eval_rubric.ts extracts claims with Haiku, scores with src/lib/review/rubric.ts, and reports agreement with `expected`. labelSource 'draft' = written by Claude from the engine lines, replace with Sunny's labels when they land.",
+  "_readme": "Form A rubric eval. One entry per moment: Sunny's /label ground truth (evals/labels_sunnwy.json) plus 4 frozen player answers with hand grades (correct, missing-details, incorrect, vague). Answers were written and graded by Claude against Sunny's labels. scripts/eval_rubric.ts extracts claims with Haiku, scores with src/lib/review/rubric.ts, and reports agreement with `expected`.",
   "moments": [
     {
       "momentId": "186756902744-25",
-      "labelSource": "draft",
+      "labelSource": "sunny",
       "fen": "r3k2r/pp3ppp/2p1pn2/4n3/3qP3/3B1Q2/PPPB2PP/2KR1R2 w kq - 4 13",
       "played": "Qe2",
       "best": "Qg3",
       "label": {
-        "idea": "move the queen out of the fork with tempo, keep hitting the knight on e5",
-        "zone": ["e5", "d3", "f3", "g3"],
-        "opponentMotif": "the knight on e5 forks the queen and the bishop"
+        "idea": "cover the bishop, attack g7 pawn, give queen diagonal space",
+        "zone": [
+          "d2",
+          "d3",
+          "g7",
+          "e5",
+          "c1",
+          "c2",
+          "e4"
+        ],
+        "opponentMotif": "Trade knight for bishop and attack weakened king"
       },
       "answers": [
         {
           "id": "a1",
-          "answer": "The knight on e5 is hitting both my queen on f3 and my bishop on d3, so the queen has to move somewhere that still attacks the knight, like g3. Then the bishop stays protected.",
+          "answer": "Qg3: the queen keeps covering the bishop on d3 and attacks the g7 pawn along the diagonal. Otherwise Black trades the knight on e5 for my bishop and goes after my king on c1.",
           "expected": "correct"
         },
         {
           "id": "a2",
-          "answer": "My queen is attacked so I should move it to a square where it still attacks the knight.",
+          "answer": "Queen to g3, it protects the bishop and hits g7.",
           "expected": "missing-details"
         },
         {
           "id": "a3",
-          "answer": "Queen to g3, it attacks the knight on e5 and the g7 pawn.",
-          "expected": "missing-details"
-        },
-        {
-          "id": "a4",
-          "answer": "I should finish development and castle, maybe push the e-pawn later.",
+          "answer": "Push e5 to kick the knight on f6 and open lines.",
           "expected": "incorrect"
         },
         {
-          "id": "a5",
-          "answer": "There is some tactic with the knight I think.",
+          "id": "a4",
+          "answer": "Just move the queen somewhere safe.",
+          "expected": "incorrect"
+        }
+      ]
+    },
+    {
+      "momentId": "186303889154-38",
+      "labelSource": "sunny",
+      "fen": "4k3/1p3pp1/4pnp1/2Ppb3/r6r/P2BB2P/1P3PP1/1R2K2R b K - 2 19",
+      "played": "Bd4",
+      "best": "Ke7",
+      "label": {
+        "idea": "Don't get forked",
+        "zone": [
+          "e8",
+          "a4",
+          "e4",
+          "d4",
+          "b5"
+        ],
+        "opponentMotif": "Fork the rook and king."
+      },
+      "answers": [
+        {
+          "id": "a1",
+          "answer": "White threatens Bb5+, forking my king on e8 and my rook on a4. Ke7 gets the king off that diagonal so I don't get forked.",
+          "expected": "correct"
+        },
+        {
+          "id": "a2",
+          "answer": "Move the king to e7 so I don't walk into a fork.",
+          "expected": "missing-details"
+        },
+        {
+          "id": "a3",
+          "answer": "Trade bishops with Bd4 to simplify.",
+          "expected": "incorrect"
+        },
+        {
+          "id": "a4",
+          "answer": "Something about my rook being loose.",
+          "expected": "incorrect"
+        }
+      ]
+    },
+    {
+      "momentId": "186303160024-11",
+      "labelSource": "sunny",
+      "fen": "r1bqk1nr/pppp1ppp/2n5/2b5/2B1P3/2p2N2/PP3PPP/RNBQK2R w KQkq - 0 6",
+      "played": "Qd5",
+      "best": "Bxf7+",
+      "label": {
+        "idea": "capture pawn, prevent castling, and fork the bishop.",
+        "zone": [
+          "f7",
+          "c5",
+          "d5"
+        ],
+        "opponentMotif": "opponent easily defends and develops, up material"
+      },
+      "answers": [
+        {
+          "id": "a1",
+          "answer": "Bxf7+ takes the pawn and the king can't castle anymore, then Qd5+ forks the king and the bishop on c5. If I don't, Black just develops and stays a pawn up.",
+          "expected": "correct"
+        },
+        {
+          "id": "a2",
+          "answer": "Sacrifice the bishop on f7 with check and then fork with the queen.",
+          "expected": "missing-details"
+        },
+        {
+          "id": "a3",
+          "answer": "Recapture the pawn with bxc3.",
+          "expected": "incorrect"
+        },
+        {
+          "id": "a4",
+          "answer": "Attack the king.",
+          "expected": "incorrect"
+        }
+      ]
+    },
+    {
+      "momentId": "186303160024-109",
+      "labelSource": "sunny",
+      "fen": "8/R5p1/6Pk/7P/6K1/8/p7/r7 w - - 0 55",
+      "played": "Kh3",
+      "best": "Ra8",
+      "label": {
+        "idea": "Threaten checkmate, Force opponent into repeatedly checking me",
+        "zone": [
+          "h8",
+          "a1",
+          "g1",
+          "h1",
+          "h5",
+          "a8"
+        ],
+        "opponentMotif": "Promote pawn."
+      },
+      "answers": [
+        {
+          "id": "a1",
+          "answer": "Ra8 threatens Rh8 mate, so Black has to keep checking me with the rook from a1 instead of promoting the a2 pawn.",
+          "expected": "correct"
+        },
+        {
+          "id": "a2",
+          "answer": "Rook to a8 to threaten mate on h8.",
+          "expected": "missing-details"
+        },
+        {
+          "id": "a3",
+          "answer": "Take the g7 pawn with the rook.",
+          "expected": "incorrect"
+        },
+        {
+          "id": "a4",
+          "answer": "Stop the a-pawn from queening.",
+          "expected": "incorrect"
+        }
+      ]
+    },
+    {
+      "momentId": "186179398940-64",
+      "labelSource": "sunny",
+      "fen": "5kr1/1p3p1R/p3p3/6P1/8/5K2/1Pr2P2/3R4 b - - 4 32",
+      "played": "Rxb2",
+      "best": "Rxg5",
+      "label": {
+        "idea": "Taking the opponent's pawn and moving your rook out of skewer danger",
+        "zone": [
+          "g8",
+          "d8",
+          "g5",
+          "e7",
+          "e8",
+          "f7"
+        ],
+        "opponentMotif": "Skewer to win rook"
+      },
+      "answers": [
+        {
+          "id": "a1",
+          "answer": "Rxg5 grabs the pawn and gets my rook off g8, because Rd8+ checks my king on f8 and then skewers and wins the rook on g8.",
+          "expected": "correct"
+        },
+        {
+          "id": "a2",
+          "answer": "Take the g5 pawn with the rook.",
+          "expected": "missing-details"
+        },
+        {
+          "id": "a3",
+          "answer": "Move the king to e7 to centralize it.",
+          "expected": "incorrect"
+        },
+        {
+          "id": "a4",
+          "answer": "Take the b2 pawn.",
+          "expected": "incorrect"
+        }
+      ]
+    },
+    {
+      "momentId": "186131276790-57",
+      "labelSource": "sunny",
+      "fen": "r5k1/6rp/b1p1p1N1/p5P1/3PP3/P1p2P2/2P4R/2K4R w - - 1 29",
+      "played": "f4",
+      "best": "Ne5",
+      "label": {
+        "idea": "get the knight out of trouble and toward more important places",
+        "zone": [
+          "d2",
+          "e2",
+          "b1",
+          "c1",
+          "d1",
+          "c6",
+          "e5",
+          "g6"
+        ],
+        "opponentMotif": "threaten to checkmate me and my knight still in danger"
+      },
+      "answers": [
+        {
+          "id": "a1",
+          "answer": "The knight on g6 is in trouble, so Ne5 gets it out and heads toward c6. Meanwhile Black is threatening mate on my king on c1 with Rb8.",
+          "expected": "correct"
+        },
+        {
+          "id": "a2",
+          "answer": "Save the knight with Ne5.",
+          "expected": "missing-details"
+        },
+        {
+          "id": "a3",
+          "answer": "Push f4 to support g5 and keep attacking the king.",
+          "expected": "incorrect"
+        },
+        {
+          "id": "a4",
+          "answer": "Defend my king.",
+          "expected": "incorrect"
+        }
+      ]
+    },
+    {
+      "momentId": "186043154612-45",
+      "labelSource": "sunny",
+      "fen": "r4rk1/p1pbb1pp/n2p4/1p1Pp2q/1P2Pp2/2P2N1P/P2BBP1R/R2K3Q w - - 2 23",
+      "played": "Kc2",
+      "best": "a4",
+      "label": {
+        "idea": "Pawn break: create something on the other side of the board",
+        "zone": [
+          "c6",
+          "d5",
+          "b5",
+          "h5",
+          "f3",
+          "a4"
+        ],
+        "opponentMotif": "Opponent pawn breaks first."
+      },
+      "answers": [
+        {
+          "id": "a1",
+          "answer": "a4 is a pawn break on the queenside against b5, creating play on the other side before Black's own pawn break on the kingside with f3 comes first.",
+          "expected": "correct"
+        },
+        {
+          "id": "a2",
+          "answer": "Open the queenside with a pawn break.",
+          "expected": "missing-details"
+        },
+        {
+          "id": "a3",
+          "answer": "Kc2 to tuck the king away safely.",
+          "expected": "incorrect"
+        },
+        {
+          "id": "a4",
+          "answer": "Improve my pieces.",
+          "expected": "incorrect"
+        }
+      ]
+    },
+    {
+      "momentId": "186180087086-27",
+      "labelSource": "sunny",
+      "fen": "r2qk2r/3nbpp1/bp2p1p1/p1p1P3/2PP4/P1N1BN2/5PPP/R2Q1RK1 w kq - 0 14",
+      "played": "Re1",
+      "best": "d5",
+      "label": {
+        "idea": "Take initiative taking space in the center.",
+        "zone": [
+          "c4",
+          "d5",
+          "d4",
+          "b5",
+          "f1"
+        ],
+        "opponentMotif": "Take all your center pawns."
+      },
+      "answers": [
+        {
+          "id": "a1",
+          "answer": "Push d5 to grab space in the center and take the initiative, because otherwise Black plays Bxc4 and cxd4 and takes my center pawns.",
+          "expected": "correct"
+        },
+        {
+          "id": "a2",
+          "answer": "d5, gain space in the center.",
+          "expected": "missing-details"
+        },
+        {
+          "id": "a3",
+          "answer": "Qb3 to protect the c4 pawn and use the b-file.",
+          "expected": "incorrect"
+        },
+        {
+          "id": "a4",
+          "answer": "Put the rook on e1.",
           "expected": "incorrect"
         }
       ]
