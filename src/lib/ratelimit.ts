@@ -5,8 +5,8 @@
  * instance: on Vercel each warm instance keeps its own counts, which is
  * enough for a demo, not for production (that would need Redis/KV).
  *
- * Tunable with env vars: RATE_LIMIT_PER_IP (default 300), RATE_LIMIT_WINDOW_MIN
- * (default 10), RATE_LIMIT_DAILY (default 10000). One ladder rung costs about
+ * Tunable with env vars: RATE_LIMIT_PER_IP (default 150), RATE_LIMIT_WINDOW_MIN
+ * (default 10), RATE_LIMIT_DAILY (default 2000). One ladder rung costs about
  * two calls, because the client prefetches the next rung.
  */
 
@@ -15,9 +15,9 @@ const num = (v: string | undefined, d: number) => {
   return Number.isFinite(n) && n > 0 ? n : d;
 };
 
-const PER_IP = num(process.env.RATE_LIMIT_PER_IP, 300);
+const PER_IP = num(process.env.RATE_LIMIT_PER_IP, 150);
 const WINDOW_MS = num(process.env.RATE_LIMIT_WINDOW_MIN, 10) * 60_000;
-const DAILY = num(process.env.RATE_LIMIT_DAILY, 10000);
+const DAILY = num(process.env.RATE_LIMIT_DAILY, 2000);
 const DAY_MS = 24 * 60 * 60_000;
 
 const ipHits = new Map<string, { start: number; count: number }>();
