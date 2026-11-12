@@ -7,10 +7,11 @@ Stockfish judges every move, Claude only explains, and code checks every reply b
 ## Run
 
 ```bash
-npm install
-echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
-npm run dev          # http://localhost:3000
+cp .env.example .env     # then paste your ANTHROPIC_API_KEY into .env
+npm install && npm run dev   # http://localhost:3000
 ```
+
+Try the username `Sunnwy`. Without a key (or past the rate limit) the coach falls back to engine-only replies.
 
 Stockfish runs in the browser (WASM worker), so there is nothing else to install.
 
