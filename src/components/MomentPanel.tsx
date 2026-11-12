@@ -38,21 +38,23 @@ const VERDICTS: Record<AttemptVerdict, { label: string; cls: string }> = {
 };
 
 const RUNGS: { stage: Stage; label: string; needs: Stage }[] = [
-  { stage: "nudge", label: "Nudge", needs: "attempt" },
-  { stage: "hint", label: "Hint", needs: "nudge" },
-  { stage: "move", label: "Show the move", needs: "hint" },
+  { stage: "focus", label: "Where to look", needs: "attempt" },
+  { stage: "threat", label: "What they threaten", needs: "focus" },
+  { stage: "piece", label: "Which piece", needs: "threat" },
+  { stage: "move", label: "Show the move", needs: "piece" },
   { stage: "explain", label: "Explain", needs: "move" },
 ];
 
 const STAGE_LABEL: Record<Stage, string> = {
   attempt: "Attempt",
-  nudge: "Nudge",
-  hint: "Hint",
+  focus: "Where to look",
+  threat: "What they threaten",
+  piece: "Which piece",
   move: "Move",
   explain: "Explain",
 };
 
-const ARROW_COLOR = "rgba(34,197,94,0.8)";
+const ARROW_COLOR = { threat: "rgba(239,68,68,0.8)", move: "rgba(34,197,94,0.8)" } as const;
 
 export default function MomentPanel({ game, moment, player }: Props) {
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
@@ -106,8 +108,11 @@ export default function MomentPanel({ game, moment, player }: Props) {
   const arrows: BoardArrow[] = (latest?.response.reply.arrows ?? []).map((a) => ({
     startSquare: a.from,
     endSquare: a.to,
-    color: ARROW_COLOR,
+    color: ARROW_COLOR[a.kind] ?? ARROW_COLOR.move,
   }));
+  // Tunnel vision: the focus zone stays lit (rest faded) through the threat rung.
+  const focusEx = exchanges.find((e) => e.stage === "focus");
+  const focus = focusEx && (latest?.stage === "focus" || latest?.stage === "threat") ? focusEx.response.reply.squares : undefined;
   const motif = latest?.response.reply.motif ?? "";
   const showMotif = taken("attempt") && motif.trim() !== "";
   const explained = taken("explain");
@@ -126,7 +131,8 @@ export default function MomentPanel({ game, moment, player }: Props) {
           fen={moment.fenBefore}
           orientation={game.userColor}
           arrows={arrows}
-          highlightSquares={latest?.response.reply.squares ?? []}
+          highlightSquares={latest?.stage === "focus" ? [] : (latest?.response.reply.squares ?? [])}
+          focus={focus}
           onMove={onMove}
         />
       </div>
@@ -147,7 +153,7 @@ export default function MomentPanel({ game, moment, player }: Props) {
             <button
               key={r.stage}
               className={btn}
-              disabled={loading || !taken(r.needs) || (r.stage === "nudge" && !taken("attempt"))}
+              disabled={loading || !taken(r.needs)}
               onClick={() => void send(r.stage)}
             >
               {r.label}

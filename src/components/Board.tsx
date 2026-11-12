@@ -18,15 +18,28 @@ interface Props {
   highlightColor?: string;
   onMove?: (from: string, to: string) => boolean;
   onSquareClick?: (square: string) => void;
+  /** Tunnel vision: when set, every other square (and its piece) is faded. */
+  focus?: string[];
 }
 
-export default function Board({ fen, orientation, arrows, highlightSquares, highlightColor, onMove, onSquareClick }: Props) {
+export default function Board({ fen, orientation, arrows, highlightSquares, highlightColor, onMove, onSquareClick, focus }: Props) {
   const squareStyles: Record<string, CSSProperties> = {};
   const highlight: CSSProperties = {
     backgroundColor: highlightColor ?? "rgba(255, 213, 0, 0.45)",
     boxShadow: "inset 0 0 0 3px rgba(255,255,255,0.6)",
   };
-  for (const sq of highlightSquares ?? []) squareStyles[sq] = highlight;
+  if (focus && focus.length > 0) {
+    const lit = new Set(focus);
+    for (const f of "abcdefgh") {
+      for (let r = 1; r <= 8; r++) {
+        const sq = `${f}${r}`;
+        squareStyles[sq] = lit.has(sq)
+          ? { boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.35)" }
+          : { filter: "brightness(0.4)" };
+      }
+    }
+  }
+  for (const sq of highlightSquares ?? []) squareStyles[sq] = { ...squareStyles[sq], ...highlight };
 
   // The board grid is height:100%; in a stretched flex row that makes rows spread apart.
   // A square wrapper pins the height to the width.
