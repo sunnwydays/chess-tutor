@@ -27,7 +27,7 @@ Stockfish runs in the browser (WASM worker), so there is nothing else to install
 
 ## Review flow
 
-A lesson moment that ends with any hint used goes into the queue (box 0). Each review starts lower on the assistance dial:
+A lesson moment you didn't find on the first try without hints goes into the queue (box 0). Each review starts lower on the assistance dial:
 
 | Box | Level | Form |
 |---|---|---|
@@ -38,9 +38,9 @@ A lesson moment that ends with any hint used goes into the queue (box 0). Each r
 
 Every session also has one control stream where "nothing wrong" is the right answer. A success moves the item up a box (due in 1 day, then 3, then learned); a miss sends it back to box 0. To stop you memorizing, the original position is shown once. After that you get a sibling (another of your moments with the same motif tag, taken from the labels), and failing that the original with colors swapped.
 
-Box 1 falls back to level 2 (one try, no hints) when the moment has no labelled idea. Box 2 falls back to level 2 when there is no scan record to build a stream from. "Add my labelled moments" puts every labelled scan moment into the queue for a demo.
+Box 1 falls back to level 2 (one try, no hints) when the moment has no labelled idea. Box 2 falls back to level 2 when there is no scan record to build a stream from.
 
-Every attempt, rung, form answer and rep is logged as one JSONL row to `logs/interactions.jsonl` (`mode`, `level`, `hintsTaken`, `msToFirstAttempt`, `positionKind`, `virtualClock`, ...).
+Every attempt, rung, form answer and rep is logged as one JSONL row to `logs/interactions.jsonl` (the function logs on Vercel) (`mode`, `level`, `hintsTaken`, `msToFirstAttempt`, `positionKind`, `virtualClock`, ...).
 
 ## Evals and tests
 

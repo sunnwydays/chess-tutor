@@ -217,7 +217,7 @@ export default function ReviewPage() {
           <Eyebrow>Spaced repetition</Eyebrow>
           <h1 className="text-3xl font-semibold tracking-tight text-fg">Review</h1>
           <p className="max-w-prose text-fg-2">
-            Positions you needed hints on come back with less help each time, until you see them cold.
+            Positions you needed help on come back with less help each time, until you see them cold.
           </p>
         </div>
       </Reveal>
@@ -253,7 +253,7 @@ export default function ReviewPage() {
           <Card className="flex flex-col items-start gap-4 p-6">
             <p className="max-w-prose text-fg-2">
               {queue.items.length === 0
-                ? "Nothing queued yet. Moments you needed hints on in a lesson land here."
+                ? "Nothing queued yet. Moments you needed help on in a lesson land here."
                 : due === 0
                   ? "Nothing due today. Skip to the future to see the next reps."
                   : `${due} due. A session is up to ${SESSION_LEN} reps; each starts with less help than the last time you saw the idea.`}

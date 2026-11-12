@@ -24,7 +24,7 @@ const STEPS = [
   },
   {
     title: "Spaced repetition",
-    body: "Moments you needed hints on come back later with less help, until you see them cold.",
+    body: "Moments you needed help on come back later with less help, until you see them cold.",
   },
 ];
 

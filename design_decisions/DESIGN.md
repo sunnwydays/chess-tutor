@@ -58,7 +58,7 @@ Models: Sonnet 5.5 as the coach (adaptive thinking, medium effort), Haiku 5.5 as
 - Rating comes from the game's own time class, so the explanation depth matches how they actually play.
 - A scan script ([find_moments.ts](../scripts/find_moments.ts)) runs the engine over the recent games and saves each critical moment plus two quiet "control" positions per game. I labelled these on a `/label` page: my cold guess, whether I sensed the mistake, the idea, the opponent's motif, the zone, and which engine lines share an idea. Those labels are the ground truth for the evals below.
 - **Controls vs. "looks critical".** With the engine hidden, I rated 34 control positions "does this look critical?": 16 yes, 18 no. About half the yeses are narrow positions where I played correctly (one or two moves hold: recaptures, forced king moves); the rest are flat or already decided positions that just felt busy. The "no" set is mostly flat. So the detector marks where I *erred*, while I rate how *hard* a position is, and the two differ. A control stays valid as "nothing wrong here" either way, but the 18 "no" positions are the cleaner pick when I want a position that also feels quiet.
-- Spaced repetition ([SPACED_REPETITION.md](SPACED_REPETITION.md)): a lesson moment that needed hints goes into a Leitner queue on a virtual clock, and the `/review` tab serves it back with less help each time. Box 0 gets the full ladder (with the moves that led to it the first time). Box 1 asks you to explain the idea in words (Form A). Box 2 asks you to find the moment in a stream of moves with no eval (Form B). Each session includes one control stream where "nothing wrong" is the right answer. After the first rep it serves a sibling, meaning another of your moments with the same motif tag, read from the labels by the rubric's motif vocabulary. Failing that it serves the original with colors swapped, so the position can't just be memorized.
+- Spaced repetition ([SPACED_REPETITION.md](SPACED_REPETITION.md)): a lesson moment you didn't find on the first try without hints goes into a Leitner queue on a virtual clock, and the `/review` tab serves it back with less help each time. Box 0 gets the full ladder (with the moves that led to it the first time). Box 1 asks you to explain the idea in words (Form A). Box 2 asks you to find the moment in a stream of moves with no eval (Form B). Each session includes one control stream where "nothing wrong" is the right answer. After the first rep it serves a sibling, meaning another of your moments with the same motif tag, read from the labels by the rubric's motif vocabulary. Failing that it serves the original with colors swapped, so the position can't just be memorized.
 - **Form A grading stays in code.** Haiku only extracts claims (ideas, squares, pieces, opponent threats) as JSON, and chess.js drops squares and pieces that aren't on the board. Pure code then scores idea / zone / opponent motif against the label, and a fixed rule gives incorrect / missing details / correct. You get one follow-up question aimed at the weakest dimension, built from a template so it can't leak the answer.
 - Every attempt, rung, form answer and finished rep is one JSONL log row (`msToFirstAttempt`, `hintsTaken`, `level`, `positionKind`, `virtualClock`). These are the numbers you'd tune the ladder and the schedule on.
 
@@ -77,7 +77,7 @@ Models: Sonnet 5.5 as the coach (adaptive thinking, medium effort), Haiku 5.5 as
   The judge only scores replies for the eval report. It never decides move quality and never runs in the app.
 - **Leak guess**: Haiku sees the FEN, the legal moves and every hint shown so far, and guesses the best move. We compare its hit rate on each rung with a FEN-only baseline. The hit rate should go up slowly as the rungs go on and only reach the answer at `move`.
 - Idea grouping heuristic vs my labels: 19/22 (a move-order rule was tried and dropped; it scored 14/22).
-- Idea-explanation rubric (the spaced-repetition grading form) vs my hand grades: 31/32.
+- Idea-explanation rubric (the spaced-repetition grading form) vs my hand grades: 30/32.
 
 ### How the evals drive prompt work
 
@@ -91,7 +91,7 @@ The failures tell you what to fix. A leak check names the exact square or move t
 
 ## Current limitations
 
-- **Shallow engine.** Depth 10 per ply and MultiPV 3 at depth 14 on critical positions keep analysis fast in the browser, but deep tactics can be missed and only 3 candidate lines exist. An attempt outside those 3 gets an "unknown" verdict instead of an eval.
+- **Shallow engine.** Depth 10 per ply and MultiPV 3 at depth 14 on critical positions keep analysis fast in the browser, but deep tactics can be missed and only 3 candidate lines exist. An attempt outside those 3 is evaluated in the browser at depth 12, and gets an "unknown" verdict if that takes over 4 s.
 - **Single-threaded WASM.** It's slow on low-end devices, and every game is analysed on the client.
 - **Moment selection is "where I erred", not "what I should study".** It's purely the win-probability drop on one move, so it ignores time trouble, repeated patterns across games, and how hard the position felt (see the controls finding above).
 - **The piece rung still gives a lot away.** Haiku guesses the move about half the time once the piece is highlighted ([EVAL_FINDINGS.md](EVAL_FINDINGS.md)).
@@ -100,7 +100,7 @@ The failures tell you what to fix. A leak check names the exact square or move t
 - **Prose validation is regex-based.** It catches SAN and square names, but not descriptive phrasing like "the knight jumps into the king's side".
 - **One move per attempt, no reasoning.** The coach sees what was played, not why, and there's no free chat.
 - **Demo limits.** The Claude routes are rate limited (150 calls per IP per 10 min, 2000 a day; tunable through env vars). The counters live in memory, so on Vercel each server instance counts separately. That's fine for a demo but would need a shared store like Redis in production. When the limit is hit, there's no API key, or the key's budget is spent, the ladder keeps going with engine-only replies and a note saying why. The idea question shows the labelled idea so the player can check their own answer.
-- **Local-only state.** The analysis cache, review queue and logs live in localStorage and local JSONL, so they're per browser. Review runs on a virtual clock for the demo, and color swap is the only perturbation.
+- **Local-only state.** The analysis cache, review queue and logs live in localStorage and a local JSONL file (function logs on Vercel), so they're per browser. Review runs on a virtual clock for the demo, and color swap is the only perturbation.
 
 ## Not in scope (yet)
 
