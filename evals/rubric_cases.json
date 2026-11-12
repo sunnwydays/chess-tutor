@@ -1,0 +1,44 @@
+{
+  "_readme": "Form A rubric eval. One entry per moment: the /label ground truth plus 3-4 frozen player answers with hand grades. scripts/eval_rubric.ts extracts claims with Haiku, scores with src/lib/review/rubric.ts, and reports agreement with `expected`. labelSource 'draft' = written by Claude from the engine lines, replace with Sunny's labels when they land.",
+  "moments": [
+    {
+      "momentId": "186756902744-25",
+      "labelSource": "draft",
+      "fen": "r3k2r/pp3ppp/2p1pn2/4n3/3qP3/3B1Q2/PPPB2PP/2KR1R2 w kq - 4 13",
+      "played": "Qe2",
+      "best": "Qg3",
+      "label": {
+        "idea": "move the queen out of the fork with tempo, keep hitting the knight on e5",
+        "zone": ["e5", "d3", "f3", "g3"],
+        "opponentMotif": "the knight on e5 forks the queen and the bishop"
+      },
+      "answers": [
+        {
+          "id": "a1",
+          "answer": "The knight on e5 is hitting both my queen on f3 and my bishop on d3, so the queen has to move somewhere that still attacks the knight, like g3. Then the bishop stays protected.",
+          "expected": "correct"
+        },
+        {
+          "id": "a2",
+          "answer": "My queen is attacked so I should move it to a square where it still attacks the knight.",
+          "expected": "missing-details"
+        },
+        {
+          "id": "a3",
+          "answer": "Queen to g3, it attacks the knight on e5 and the g7 pawn.",
+          "expected": "missing-details"
+        },
+        {
+          "id": "a4",
+          "answer": "I should finish development and castle, maybe push the e-pawn later.",
+          "expected": "incorrect"
+        },
+        {
+          "id": "a5",
+          "answer": "There is some tactic with the knight I think.",
+          "expected": "incorrect"
+        }
+      ]
+    }
+  ]
+}
