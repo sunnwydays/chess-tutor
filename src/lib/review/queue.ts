@@ -21,6 +21,8 @@ export type ReviewItem = {
     fen: string;
     kind: PositionKind;
     sourceGame?: string;
+    /** Sibling positions: the moment id to play (resolved via review/sources.ts). */
+    momentId?: string;
   }[];
   box: 0 | 1 | 2 | 3; // 3 = graduated
   dueAt: number; // virtual ms
