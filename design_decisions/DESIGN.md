@@ -76,6 +76,16 @@ Models: Sonnet 5.5 as the coach (adaptive thinking, medium effort), Haiku 5.5 as
 - Idea grouping heuristic vs my labels: 19/22 (a move-order rule was tried and dropped; it scored 14/22).
 - Idea-explanation rubric (the spaced-repetition grading form) vs my hand grades: 31/32.
 
+### How the evals drive prompt work
+
+The evals turn prompt engineering from "read a few replies and guess" into a test loop. The cases are frozen and say what we expect (legal moves, no leaks before `move`, the engine's move named after it, the right depth), so any prompt change can be measured:
+
+1. Change the prompt, a rung rule or a heuristic.
+2. Run `npm run eval`. You can rerun just the failing cases or rungs with `--cases` / `--stages`.
+3. Compare with the saved run (`evals/baseline_v0.json` is the first full run). Keep the change if more checks pass and nothing regresses; otherwise revert it.
+
+The failures tell you what to fix. A leak check names the exact square or move that leaked, the judge's note says why a reply missed the idea, and a high retry or fallback rate on one rung means that rung's instructions are unclear. The idea-grouping rule went through the same loop: a move-order rule looked sensible, but it lowered agreement with my labels from 19/22 to 14/22, so it was dropped.
+
 ## Not in scope (yet)
 
 See [NEXT_STEPS.md](NEXT_STEPS.md): cross-game pattern report, spaced repetition in the UI, a "why" box next to the attempt, opponent analysis, logging real use as new eval cases.
