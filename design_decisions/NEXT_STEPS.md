@@ -20,12 +20,13 @@ Rough priority order. Already built since v0 and no longer listed here: the spac
 
 ## Tuning and data
 
-11. **A/B test prompts on real use.** Use the JSONL logs to compare prompt versions on time to first attempt, hints taken, success rate, moves stepped through, and signs of frustration from micro-interactions (a statistical model, or a small trained one).
-12. **Grow the eval set from real use.** Turn logged interactions (prompt version, rung, attempt, reply, validation result, later verdict) into new frozen cases, from more players and rating bands than mine.
-13. **Score the heuristics against more labels.** Measure the focus zone against the zones I labelled, try having the LLM describe the shared idea for moment type (with the engine still picking the good moves), and rerun the explain judge with full history.
-14. **Better perturbations.** Perturbed review positions proposed by the LLM and accepted only if the engine confirms the same idea still works, plus level 3 as its own review box.
+11. **Prompts that handle sacrifices and trade-offs.** Some moves look like they hang material but are deliberate: an aggressive move where a pawn can seemingly just be taken, and the coach doesn't explain why taking it is fine or bad. Other moves are real trade-offs: giving up a rook for faster development, or two pieces under attack where you can only save one, so the right idea is to cover or be ready to recapture when the bishop takes your rook. Right now the coach treats these like plain mistakes. Tune the prompt (and add eval cases) so it names the trade-off, says what you get for what you give, and checks the engine line for why the "free" material isn't free.
+12. **A/B test prompts on real use.** Use the JSONL logs to compare prompt versions on time to first attempt, hints taken, success rate, moves stepped through, and signs of frustration from micro-interactions (a statistical model, or a small trained one).
+13. **Grow the eval set from real use.** Turn logged interactions (prompt version, rung, attempt, reply, validation result, later verdict) into new frozen cases, from more players and rating bands than mine.
+14. **Score the heuristics against more labels.** Measure the focus zone against the zones I labelled, try having the LLM describe the shared idea for moment type (with the engine still picking the good moves), and rerun the explain judge with full history.
+15. **Better perturbations.** Perturbed review positions proposed by the LLM and accepted only if the engine confirms the same idea still works, plus level 3 as its own review box.
 
 ## Infrastructure
 
-15. **A real backend.** Move moves, analysis cache, review queue and logs out of localStorage into a proper store (self-hosted Postgres or a cloud service), which fits this structured data and allows accounts across devices.
-16. **Server-side engine option** for low-end devices, and multi-threaded WASM behind cross-origin-isolation headers.
+16. **A real backend.** Move moves, analysis cache, review queue and logs out of localStorage into a proper store (self-hosted Postgres or a cloud service), which fits this structured data and allows accounts across devices.
+17. **Server-side engine option** for low-end devices, and multi-threaded WASM behind cross-origin-isolation headers.
