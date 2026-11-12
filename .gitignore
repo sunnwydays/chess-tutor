@@ -25,3 +25,5 @@ public/stockfish/
 logs/
 
 *.pdf
+*.zip
+transcripts/
