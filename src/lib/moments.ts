@@ -48,6 +48,8 @@ export interface MomentLabel {
   opponentMotif?: string;
   /** Squares the player should be looking at (zone hint ground truth). */
   zone?: string[];
+  /** Control positions only: with the engine hidden, did this look critical? */
+  looksCritical?: "yes" | "no";
   notes: string;
   updatedAt: string;
 }

@@ -78,8 +78,8 @@ export default function LabelPage() {
       .then(async (r) => {
         const body = (await r.json()) as MomentRecord[] | { error: string };
         if (!r.ok || "error" in body) throw new Error("error" in body ? body.error : "Failed");
-        // Controls (quiet positions for find-the-moment) have nothing to label.
-        setRecords(body.filter((r) => momentKind(r) === "critical"));
+        // Criticals first; controls (quiet positions) get one yes/no question at the end.
+        setRecords([...body.filter((r) => momentKind(r) === "critical"), ...body.filter((r) => momentKind(r) === "control")]);
       })
       .catch((e: Error) => setError(e.message));
   }, []);
@@ -167,6 +167,7 @@ export default function LabelPage() {
   }
   const labeled = records.filter((r) => labels[r.id]?.updatedAt).length;
   const context = g.moves.slice(Math.max(0, m.ply - 1 - CONTEXT_PLIES), m.ply - 1).join(" ");
+  const isControl = momentKind(rec) === "control";
 
   async function copy() {
     const out = records!
@@ -211,6 +212,25 @@ export default function LabelPage() {
         {g.opening ? ` | ${g.opening}` : ""}
       </p>
 
+      {isControl ? (
+        <div className="flex flex-col gap-4 md:flex-row">
+          <div className="w-full max-w-[480px]">
+            <Board fen={rec.moment.fenBefore} orientation={g.userColor} />
+            <p className="mt-1 text-center text-xs text-zinc-500">Before: {context || "(start)"}</p>
+          </div>
+          <div className="flex flex-1 flex-col gap-3 rounded border border-zinc-800 p-3 text-sm">
+            <p className="text-zinc-400">Control position (move {moveNo}{dots}, your turn). Engine hidden.</p>
+            <p className="font-semibold text-zinc-200">Does this look critical to you?</p>
+            <div className="flex gap-2">
+              {(["yes", "no"] as const).map((v) => (
+                <button key={v} className={chip(label.looksCritical === v)} onClick={() => save({ looksCritical: v })}>
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="flex flex-col gap-4 md:flex-row">
         <div className="w-full max-w-[480px]">
           <Board fen={view.fen} orientation={g.userColor} arrows={[...view.arrows, ...engineArrows]} highlightSquares={zone} highlightColor="rgba(168, 85, 247, 0.7)" onSquareClick={toggleZone} />
@@ -353,6 +373,7 @@ export default function LabelPage() {
           </div>
         </div>
       </div>
+      )}
 
       <ol className="flex flex-wrap gap-1 text-xs">
         {records.map((r, i) => (
@@ -360,9 +381,9 @@ export default function LabelPage() {
             <button
               onClick={() => go(i)}
               className={`rounded px-2 py-0.5 ${i === idx ? "bg-emerald-700 text-white" : labels[r.id]?.updatedAt ? "bg-zinc-700" : "bg-zinc-900 hover:bg-zinc-800"}`}
-              title={`${r.game.id} ply ${r.moment.ply}`}
+              title={`${r.game.id} ply ${r.moment.ply}${momentKind(r) === "control" ? " (control)" : ""}`}
             >
-              {i + 1}
+              {momentKind(r) === "control" ? `c${i + 1}` : i + 1}
             </button>
           </li>
         ))}
