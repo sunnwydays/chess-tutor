@@ -13,7 +13,7 @@ import IdeaQuestion from "@/components/IdeaQuestion";
 import MomentPanel, { type LadderEnd } from "@/components/MomentPanel";
 import { Button, Card, Chip, Eyebrow, Reveal, cx } from "@/components/ui";
 import { logEvent } from "@/lib/log";
-import { isMe } from "@/lib/me";
+import { isMe, loadMe } from "@/lib/me";
 import { momentKind, type MomentLabel, type MomentRecord } from "@/lib/moments";
 import {
   dueCount,
@@ -68,8 +68,13 @@ export default function ReviewPage() {
   useEffect(() => {
     setLabels(loadLabels());
     setQueue(loadQueue());
-    fetch("/api/moments?user=sunnwy")
+    // Precomputed moments (scripts/find_moments.ts) add control streams and
+    // level-0 streams; most users have none, and review runs on lesson items alone.
+    const me = loadMe();
+    if (!me) return;
+    fetch(`/api/moments?user=${encodeURIComponent(me)}`)
       .then(async (r) => {
+        if (r.status === 404) return;
         const body = (await r.json()) as MomentRecord[] | { error: string };
         if (!r.ok || "error" in body) throw new Error("error" in body ? body.error : "Failed");
         setRecords(body);
