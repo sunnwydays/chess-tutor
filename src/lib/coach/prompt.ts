@@ -21,6 +21,7 @@ Hard rules before the "move" rung:
 
 Teaching rules:
 - Feedback is about the move, not the person. No "careless", "obvious", "you missed", no grades, no praise filler.
+- Only call a piece or pawn loose, hanging or undefended if <engine> lists it under "undefended"; a capture whose target is "defended" is a trade or an attack, not a free win.
 - Prefer the lasting idea over the one-move consequence: if a move hangs a pawn and also gives up the center, the center is the lesson. Explain intent, not just what happens next.
 - Match <player>: a beginner gets plain words and one concrete idea; a club player gets the tactic named and a short line; an advanced player gets the vocabulary and the long-term idea.
 - <history> holds what you already said on this moment. Don't repeat it; build on it.
@@ -81,28 +82,52 @@ Good moves: ${f.goodMoves.join(", ")}
 Moment type: ${f.momentType}
 Zone squares (focus rung): ${f.zone.join(" ")}
 Piece squares (piece rung): ${f.pieceSquares.join(" ")}
-Opponent threats (their captures and checks if it were their turn, as from-to): ${opponentThreats(m.fenBefore) || "none"}`;
+Opponent threats (their captures and checks if it were their turn, as from-to; "defended" = the player can recapture): ${opponentThreats(m.fenBefore) || "none"}
+Player's pieces that are undefended: ${undefended(m.fenBefore) || "none"}`;
+}
+
+/** The side to move's pieces (not the king) that nothing of theirs defends: the only squares the coach may call loose. */
+export function undefended(fen: string): string {
+  try {
+    const chess = new Chess(fen);
+    const me = chess.turn();
+    return chess
+      .board()
+      .flat()
+      .filter((p) => p && p.color === me && p.type !== "k" && chess.attackers(p.square, me).length === 0)
+      .map((p) => `${p!.type.toUpperCase()}${p!.square}`)
+      .join(" ");
+  } catch {
+    return "";
+  }
 }
 
 /** The opponent's captures and checks with the turn flipped: the only legal material for threat arrows. */
 export function opponentThreats(fen: string, max = 12): string {
   try {
+    const real = new Chess(fen);
+    const player = real.turn();
     const moves = new Chess(flipTurn(fen)).moves({ verbose: true });
     return moves
       .filter((mv) => mv.captured || mv.san.includes("+") || mv.san.includes("#"))
       .slice(0, max)
-      .map((mv) => `${mv.from}-${mv.to} (${mv.san})`)
+      .map((mv) => {
+        if (!mv.captured) return `${mv.from}-${mv.to} (${mv.san})`;
+        const n = real.attackers(mv.to, player).length;
+        return `${mv.from}-${mv.to} (${mv.san}, target ${n ? `defended ${n}x` : "undefended"})`;
+      })
       .join(", ");
   } catch {
     return "";
   }
 }
 
-function attemptBlock(attempt: string, j: AttemptJudgement): string {
+function attemptBlock(attempt: string, j: AttemptJudgement, line?: string[]): string {
   const lines: string[] = [`Move tried: ${attempt}`, `Engine verdict: ${j.verdict}`];
   if (j.rank !== null) lines.push(`It is candidate #${j.rank} in <engine>.`);
-  else if (j.evalCp !== null) lines.push(`Not among the engine's candidates; eval after it: ${fmtEval(j.evalCp, null)}.`);
-  else lines.push("Not among the engine's candidates and not analysed: don't say how good or bad it is.");
+  else if (j.evalCp !== null) lines.push(`Not among the engine's top candidates; eval after it: ${fmtEval(j.evalCp, null)}.`);
+  else lines.push("Not among the engine's top candidates. Say it isn't one of the engine's top choices and point at what to check; don't call it good or bad, and never say you can't rate or analyse it.");
+  if (line?.length) lines.push(`Engine line after it (opponent's best reply first): ${line.join(" ")}`);
   if (j.wpLoss !== null) lines.push(`Win probability lost vs the best line: ${j.wpLoss.toFixed(0)} points.`);
   return lines.join("\n");
 }
@@ -136,7 +161,7 @@ The moment: move ${moveNumber(moment.ply)} ${moment.played}`,
     );
   }
   if (stage === "attempt" && req.attempt && judgement) {
-    blocks.push(tagged("attempt", attemptBlock(req.attempt, judgement)));
+    blocks.push(tagged("attempt", attemptBlock(req.attempt, judgement, req.attemptLine)));
   }
   blocks.push(tagged("stage", stageLine(stage)));
   return blocks.join("\n\n");

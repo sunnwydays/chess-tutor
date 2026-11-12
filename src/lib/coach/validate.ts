@@ -12,6 +12,20 @@ const PIECE_WORD: Record<string, string> = { king: "k", queen: "q", rook: "r", b
 const PIECE_RE = /\b(king|queen|rook|bishop|knight|pawn)s?\b/gi;
 const PERSON_RE = /\b(careless|sloppy|lazy|obvious(ly)?|silly|you (missed|should have|overlooked|forgot))\b/i;
 const MAX_POINTS = 3;
+const LOOSE = "(?:loose|hanging|undefended|unprotected|unguarded)";
+const PIECE_NAME = "(?:pawn|knight|bishop|rook|queen)";
+/** "the loose bishop on f5", "undefended Bf5", "hanging f7". */
+const LOOSE_BEFORE_RE = new RegExp(`\\b${LOOSE}\\s+(?:[a-z]+\\s+){0,2}[KQRBN]?([a-h][1-8])\\b`, "gi");
+/** "b2, which is loose", "the f7 pawn is hanging". */
+const LOOSE_AFTER_RE = new RegExp(
+  `\\b[KQRBN]?([a-h][1-8])(?:\\s+${PIECE_NAME})?,?\\s+(?:which\\s+)?(?:is|was|stays|becomes|left)\\s+(?:now\\s+|still\\s+)?${LOOSE}\\b`,
+  "gi",
+);
+
+/** Squares the text calls loose / hanging / undefended. */
+export function looseClaims(text: string): string[] {
+  return [...text.matchAll(LOOSE_BEFORE_RE), ...text.matchAll(LOOSE_AFTER_RE)].map((m) => m[1].toLowerCase());
+}
 
 /** Length caps per rung: words, and sentences where the rung is "N sentences". */
 /**
@@ -107,6 +121,7 @@ export function validateReply(
   if (moment.punish) for (const s of moment.punish.pv) known.add(normSan(s));
   known.add(normSan(moment.played));
   for (const s of req.game.moves) known.add(normSan(s));
+  for (const s of req.attemptLine ?? []) known.add(normSan(s));
 
   // 1. Every SAN in `moves` and every SAN-looking token in the text must be a known move.
   for (const m of reply.moves) {
@@ -182,7 +197,24 @@ export function validateReply(
       errors.push("stage move: text does not name a good move");
     }
   }
-  // 6. Length, bullets, tone.
+  // 6. "Loose / hanging / undefended" claims must match the board. Only on rungs
+  // that describe the position as it stands (attempt: the position after the
+  // attempt); move and explain talk about lines, where pieces do become loose.
+  if (HIDDEN_STAGES.includes(stage)) {
+    const board = new Chess(moment.fenBefore);
+    if (stage === "attempt" && req.attempt) {
+      try {
+        board.move(req.attempt);
+      } catch {}
+    }
+    for (const sq of looseClaims(reply.text)) {
+      const p = board.get(sq as never);
+      if (p && p.type !== "k" && board.attackers(sq as never, p.color).length > 0) {
+        errors.push(`text calls ${sq} loose/undefended, but the piece there is defended`);
+      }
+    }
+  }
+  // 7. Length, bullets, tone.
   const cap = CAPS[stage];
   const words = countWords(reply.text);
   if (words > cap.words) errors.push(`text has ${words} words (max ${cap.words} at ${stage})`);
@@ -240,7 +272,7 @@ export function fallbackReply(req: CoachRequest, judgement: AttemptJudgement | n
         v === "best" || v === "good"
           ? `${req.attempt} is ${v === "best" ? "the engine's top choice" : "one of the engine's good moves"} here (eval ${ev(judgement?.evalCp ?? 0)}).`
           : v === "unknown"
-            ? `The engine didn't analyse ${req.attempt}, so no verdict on it; try another move or ask where to look.`
+            ? `${req.attempt} isn't one of the engine's top choices here; try another move or ask where to look.`
             : `${req.attempt} loses about ${judgement?.wpLoss?.toFixed(0) ?? "?"} win-probability points compared with the best move.`;
       return { ...empty, text, moves: req.attempt ? [req.attempt] : [] };
     }
