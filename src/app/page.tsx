@@ -75,7 +75,7 @@ export default function Home() {
     <main className="mx-auto max-w-6xl px-5 py-8">
       {showLanding && (
         <div className="flex flex-col gap-16">
-          <section className="bg-grid relative rounded-card border border-line px-6 py-16 sm:px-12 sm:py-20">
+          <section className="bg-grid overflow-hidden rounded-card border border-line px-6 py-16 sm:px-12 sm:py-20">
             <Reveal className="mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
               <Eyebrow>Chess.com coach</Eyebrow>
               <h1 className="text-4xl font-semibold tracking-tight text-fg sm:text-5xl">

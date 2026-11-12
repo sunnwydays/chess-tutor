@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { dueCount, loadQueue } from "@/lib/review/queue";
 import { cx } from "./ui";
 
-/** Shared header: wordmark + Lessons / Review (with due badge) / Label. */
+/** Shared header: wordmark + Lessons / Review (with due badge). The /label dev page is reachable by URL only. */
 export default function TopNav() {
   const path = usePathname();
   const [due, setDue] = useState(0);
@@ -44,12 +44,11 @@ export default function TopNav() {
               <path d="M8 20h8M9 17h6M12 4c-2 0-3.5 1.5-3.5 3.3 0 1.4.8 2.4 1.6 3.2L9 15h6l-1.1-4.5c.8-.8 1.6-1.8 1.6-3.2C15.5 5.5 14 4 12 4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
             </svg>
           </span>
-          <span className="text-[15px] font-semibold tracking-tight">Critical Moments</span>
+          <span className="text-[15px] font-semibold tracking-tight">Chess Tutor</span>
         </Link>
         <nav className="flex items-center gap-1">
           {link("/", "Lessons")}
           {link("/review", "Review", due)}
-          {link("/label", "Label")}
         </nav>
       </div>
     </header>

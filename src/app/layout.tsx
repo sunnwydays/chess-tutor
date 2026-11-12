@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "sw
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Critical Moments: AI chess coach",
+  title: "Chess Tutor",
   description: "Find the 1-3 moments that decided your Chess.com games, and learn the idea behind each one.",
 };
 

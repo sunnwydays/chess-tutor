@@ -92,7 +92,7 @@ export default function ReviewPage() {
     setQueue(next);
   }
 
-  if (!queue) return <p className="text-muted">Loading...</p>;
+  if (!queue) return <main className="mx-auto max-w-6xl px-5 py-8 text-muted">Loading...</main>;
   const due = dueCount(queue.items, queue.clock);
   const pending = queue.items.filter((it) => it.box < 3).length;
   const graduated = queue.items.length - pending;
@@ -182,7 +182,7 @@ export default function ReviewPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-8">
+    <main className="mx-auto flex max-w-6xl flex-col gap-8 px-5 py-8">
       <Reveal>
         <div className="flex flex-col gap-2">
           <Eyebrow>Spaced repetition</Eyebrow>
@@ -310,7 +310,7 @@ export default function ReviewPage() {
           </ul>
         </details>
       )}
-    </div>
+    </main>
   );
 }
 
