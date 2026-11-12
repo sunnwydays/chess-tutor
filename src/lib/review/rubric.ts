@@ -3,14 +3,13 @@
  * sentence or two: what is the plan, where, and what is the opponent up to.
  *
  * Extract-then-compare, so the model never decides correctness:
- *   1. extractClaims(): Haiku turns the answer into JSON claims; squares and
+ *   1. extractClaims() (extract.ts, server only): Haiku turns the answer into JSON claims; squares and
  *      piece references that fail chess.js are dropped.
  *   2. scoreClaims(): pure code scores idea / zone / opponent motif against
  *      the /label ground truth as hit / partial / miss.
  *   3. grade(): fixed rule -> correct / missing-details / incorrect.
  * See design_decisions/SPACED_REPETITION.md, Form A.
  */
-import Anthropic from "@anthropic-ai/sdk";
 import { Chess, type Square } from "chess.js";
 
 export const RUBRIC_MODEL = "claude-haiku-5-5";
@@ -97,33 +96,6 @@ export function validateClaims(raw: Claims, fen: string): Claims {
     pieces,
     opponentThreats: (raw.opponentThreats ?? []).map((s) => s.trim()).filter(Boolean),
   };
-}
-
-let _client: Anthropic | null = null;
-function client(): Anthropic {
-  if (!_client) _client = new Anthropic();
-  return _client;
-}
-
-/** Haiku extracts; chess.js validates. Throws on API failure (caller decides the fallback). */
-export async function extractClaims(answer: string, fen: string): Promise<Claims> {
-  const side = fen.split(" ")[1] === "b" ? "Black" : "White";
-  const res = await client().messages.create({
-    model: RUBRIC_MODEL,
-    max_tokens: 1024,
-    output_config: { effort: "low", format: { type: "json_schema", schema: CLAIMS_SCHEMA } },
-    system: [{ type: "text", text: EXTRACT_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-    messages: [
-      {
-        role: "user",
-        content: `Position (FEN): ${fen}\n${side} to move.\n\nStudent's answer:\n"""\n${answer.trim()}\n"""`,
-      },
-    ],
-  });
-  if (res.stop_reason === "refusal") throw new Error("extraction refused");
-  const text = res.content.find((b) => b.type === "text")?.text;
-  if (!text) throw new Error(`no text block (stop_reason ${res.stop_reason})`);
-  return validateClaims(JSON.parse(text) as Claims, fen);
 }
 
 /* ---------- scoring (pure) ---------- */

@@ -5,8 +5,8 @@
  * Run: npm run eval-rubric [-- --verbose]
  */
 import { readFileSync } from "node:fs";
+import { extractClaims } from "@/lib/review/extract";
 import {
-  extractClaims,
   followUpQuestion,
   grade,
   scoreClaims,
