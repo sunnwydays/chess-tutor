@@ -204,6 +204,10 @@ export default function ReviewPage() {
         <Button disabled={skipToFuture(queue.items, queue.clock) === queue.clock} onClick={skip} title="Advance the virtual clock to the next due date">
           Skip to the future
         </Button>
+        <span className="max-w-prose text-sm text-muted">
+          Demo clock: jumps ahead to when your next review is scheduled, as if days had passed, so you can see positions come back with less help without waiting.
+          {skipToFuture(queue.items, queue.clock) === queue.clock && " Disabled now: nothing is scheduled later."}
+        </span>
         <Button variant="ghost" className="ml-auto text-muted hover:text-danger" onClick={reset}>
           Reset
         </Button>
