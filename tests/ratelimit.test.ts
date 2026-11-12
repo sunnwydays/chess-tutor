@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { checkRateLimit } from "@/lib/ratelimit";
 
 describe("checkRateLimit", () => {
-  it("allows 60 calls per IP per window, then refuses until the window resets", () => {
+  it("allows 300 calls per IP per window, then refuses until the window resets", () => {
     const t = 1_000_000;
-    for (let i = 0; i < 60; i++) expect(checkRateLimit("1.1.1.1", t).ok).toBe(true);
+    for (let i = 0; i < 300; i++) expect(checkRateLimit("1.1.1.1", t).ok).toBe(true);
     const r = checkRateLimit("1.1.1.1", t);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.scope).toBe("ip");
