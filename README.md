@@ -2,7 +2,7 @@
 
 Enter a Chess.com username, pick a recent game, and a coach walks you through the 1-3 moments where your own moves cost the most, with a hint ladder instead of the answer. Moments you needed help on come back later in a Review tab, each time with less help.
 
-Stockfish judges every move, Claude only explains, and code checks every reply before you see it. Design notes: [design_decisions/DESIGN.md](design_decisions/DESIGN.md).
+Stockfish judges every move, Claude only explains, and code checks every reply before you see it.
 
 **Live demo:** https://chess-tutor-ecru.vercel.app/ (try username `Sunnwy`)
 
@@ -13,9 +13,19 @@ cp .env.example .env     # then paste your ANTHROPIC_API_KEY into .env
 npm install && npm run dev   # http://localhost:3000
 ```
 
-Try the username `Sunnwy`. Without a key (or past the rate limit) the coach falls back to engine-only replies.
+Try the username `Sunnwy`. Without a key (or past the rate limit) the coach falls back to engine-only replies. Stockfish runs in the browser (WASM worker), so there is nothing else to install.
 
-Stockfish runs in the browser (WASM worker), so there is nothing else to install.
+## Docs
+
+| Doc | What's in it |
+|---|---|
+| [DESIGN.md](design_decisions/DESIGN.md) | **Start here.** System design, grounding, prompt and context strategy, evals, limitations |
+| [DEVELOPMENT.md](design_decisions/DEVELOPMENT.md) | How it was built: each iteration, what changed and why, plan vs shipped, AI usage |
+| [EVAL_FINDINGS.md](design_decisions/EVAL_FINDINGS.md) | The hint ladder's eval runs, v0 -> redesign v1 -> v2, and heuristics vs my labels |
+| [SPACED_REPETITION.md](design_decisions/SPACED_REPETITION.md) | The review tab: assistance levels, the two review forms, schedule |
+| [NEXT_STEPS.md](design_decisions/NEXT_STEPS.md) | What I'd do with more time |
+| [PLAN.md](PLAN.md) | The original plan and brainstorm triage |
+| [brainstorm_todo_45min.md](design_decisions/brainstorm_todo_45min.md), [working_notes.md](design_decisions/working_notes.md) | Raw notes from before and during the build |
 
 ## Pages
 
@@ -40,7 +50,7 @@ Every session also has one control stream where "nothing wrong" is the right ans
 
 Box 1 falls back to level 2 (one try, no hints) when the moment has no labelled idea. Box 2 falls back to level 2 when there is no scan record to build a stream from.
 
-Every attempt, rung, form answer and rep is logged as one JSONL row to `logs/interactions.jsonl` (the function logs on Vercel) (`mode`, `level`, `hintsTaken`, `msToFirstAttempt`, `positionKind`, `virtualClock`, ...).
+Every attempt, rung, form answer and rep is logged as one JSONL row (`mode`, `level`, `hintsTaken`, `msToFirstAttempt`, `positionKind`, `virtualClock`, ...) to `logs/interactions.jsonl`, or to the function logs on Vercel.
 
 ## Evals and tests
 
@@ -64,6 +74,23 @@ Latest coach eval (39 cases, `evals/run_review_integration.json`) vs the first r
 
 Leak checks pass on 100% of replies. The leak guess (Haiku guessing the best move from the hints shown so far) climbs from 15% on the bare position to 31 / 33 / 41 / 59% across attempt -> piece, and 97% at move. Form A grader agreement with hand grades: 30/32 (94%). Still weak: the attempt reply names the idea only half the time, and half the explain replies pad past three points (judge "forced style").
 
+## Time breakdown
+
+From the commit timestamps. Work between the windows doesn't show up in git.
+
+| Part | When |
+|---|---|
+| Brainstorm and plan | ~1 h before the first commit |
+| v0: Chess.com fetch, board, coach route with validation, Stockfish driver | 10:00-11:25 |
+| Labels, eval harness, logging, review queue and streams, engine wired into the UI | 15:55-17:00 |
+| Ladder redesign, Form A rubric, review tab, eval iterations, design notes | 20:35-21:10 |
+| Grounding fixes, rate limits, prefetching, deploy | 21:30-22:10 |
+| UI pass, review fixes, final review of the docs | 22:10-23:00 |
+
+## AI usage
+
+Built with Claude Code. Boilerplate and UI went to subagents; the prompt, validation and eval work stayed in the main session, and every change was type-checked, tested and committed from there. Details in [DEVELOPMENT.md](design_decisions/DEVELOPMENT.md#how-ai-was-used). Agent transcripts: [transcripts/](transcripts/).
+
 ## Layout
 
 - `src/app/` pages; `api/games` (Chess.com proxy), `api/coach` (ladder replies), `api/review/grade` (Form A), `api/log`, `api/moments` (scan file)
@@ -72,3 +99,4 @@ Leak checks pass on 100% of replies. The leak guess (Haiku guessing the best mov
 - `src/lib/review/` queue (Leitner), streams (Form B), rubric + extract (Form A), sources (labels, siblings, color swap), session rules
 - `src/components/` board, lesson, moment panel (ladder), idea question, find the moment
 - `evals/`, `scripts/` eval cases, moment scan, eval runners
+- `design_decisions/` the docs above
