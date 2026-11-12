@@ -223,7 +223,10 @@ export default function LabelPage() {
             <p className="font-semibold text-zinc-200">Does this look critical to you?</p>
             <div className="flex gap-2">
               {(["yes", "no"] as const).map((v) => (
-                <button key={v} className={chip(label.looksCritical === v)} onClick={() => save({ looksCritical: v })}>
+                <button key={v} className={chip(label.looksCritical === v)} onClick={() => {
+                    save({ looksCritical: v });
+                    go(idx + 1);
+                  }}>
                   {v}
                 </button>
               ))}
