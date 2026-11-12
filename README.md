@@ -4,6 +4,8 @@ Enter a Chess.com username, pick a recent game, and a coach walks you through th
 
 Stockfish judges every move, Claude only explains, and code checks every reply before you see it. Design notes: [design_decisions/DESIGN.md](design_decisions/DESIGN.md).
 
+**Live demo:** https://chess-tutor-ecru.vercel.app/ (try username `Sunnwy`)
+
 ## Run
 
 ```bash
