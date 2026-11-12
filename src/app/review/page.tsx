@@ -16,7 +16,6 @@ import { logEvent } from "@/lib/log";
 import { isMe } from "@/lib/me";
 import { momentKind, type MomentLabel, type MomentRecord } from "@/lib/moments";
 import {
-  createItem,
   dueCount,
   loadQueue,
   nextDue,
@@ -31,7 +30,6 @@ import { ladderLevelFor, type RubricGrade } from "@/lib/review/rubric";
 import { ladderAfterFind, levelFor, toRep, type Level } from "@/lib/review/session";
 import {
   fromRecord,
-  ideaTag,
   loadLabels,
   loadSources,
   resolvePosition,
@@ -97,14 +95,6 @@ export default function ReviewPage() {
   const pending = queue.items.filter((it) => it.box < 3).length;
   const graduated = queue.items.length - pending;
   const day = queue.items.length ? Math.floor((queue.clock - Math.min(...queue.items.map((h) => h.history[0]?.at ?? h.dueAt))) / DAY) : 0;
-
-  function seed() {
-    const have = new Set(queue!.items.map((it) => it.id));
-    const fresh = records
-      .filter((r) => momentKind(r) === "critical" && labels[r.id]?.updatedAt && labels[r.id]?.useful !== "no" && !have.has(r.id))
-      .map((r) => createItem(r.id, ideaTag(labels[r.id]), r.moment.fenBefore, queue!.clock));
-    persist({ ...queue!, items: [...queue!.items, ...fresh] });
-  }
 
   function skip() {
     persist({ ...queue!, clock: skipToFuture(queue!.items, queue!.clock) });
@@ -209,9 +199,6 @@ export default function ReviewPage() {
         <Button disabled={due > 0 || pending === 0} onClick={skip} title="Advance the virtual clock to the next due date">
           Skip to the future
         </Button>
-        <Button onClick={seed} disabled={!records.length}>
-          Add my labelled moments
-        </Button>
         <Button variant="ghost" className="ml-auto text-muted hover:text-danger" onClick={reset}>
           Reset
         </Button>
@@ -223,7 +210,7 @@ export default function ReviewPage() {
           <Card className="flex flex-col items-start gap-4 p-6">
             <p className="max-w-prose text-fg-2">
               {queue.items.length === 0
-                ? "Nothing queued yet. Moments you needed hints on in a lesson land here, or add your labelled moments."
+                ? "Nothing queued yet. Moments you needed hints on in a lesson land here."
                 : due === 0
                   ? "Nothing due today. Skip to the future to see the next reps."
                   : `${due} due. A session is up to ${SESSION_LEN} reps; each starts with less help than the last time you saw the idea.`}
