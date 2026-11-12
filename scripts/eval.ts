@@ -17,7 +17,7 @@ import { Chess } from "chess.js";
 import { generateCoachReply } from "@/lib/coach/client";
 import type { EvalCase } from "@/lib/coach/evalcase";
 import { STAGES, type CoachReply, type CoachRequest, type CoachTurn, type Stage } from "@/lib/coach/schema";
-import { legalSans, mentions, sanTokens } from "@/lib/coach/validate";
+import { CAPS, HIDDEN_STAGES, legalSans, mentions, sanTokens } from "@/lib/coach/validate";
 import { goodCandidates, judgeAttempt, normSan } from "@/lib/coach/verdict";
 import type { MomentAnalysis } from "@/lib/engine/types";
 import { checkIdeas } from "./eval_ideas";
@@ -54,9 +54,9 @@ const opts = {
 // ---------- deterministic checks ----------
 
 /** Rungs before the move is revealed. */
-const EARLY: Stage[] = ["attempt", "nudge", "hint"];
-/** Word caps per rung, from the system prompt ("about 80", "up to 120") with 15% slack. */
-const WORD_CAP: Record<Stage, number> = { attempt: 92, nudge: 92, hint: 92, move: 92, explain: 138 };
+const EARLY: Stage[] = HIDDEN_STAGES;
+/** Word caps per rung, same as the validator. */
+const WORD_CAP = (s: Stage) => CAPS[s].words;
 const MAX_BULLETS = 3;
 const PERSON_RE = /\b(careless|sloppy|lazy|obvious(ly)?|silly|you (missed|should have|overlooked|forgot)|basic mistake|beginner('s)? mistake)\b/i;
 const PIECE_RE = /\b(king|queen|rook|bishop|knight|pawn)\b[^.;\n]{0,40}?\b([a-h][1-8])\b/gi;
@@ -123,9 +123,9 @@ export function leakCheck(reply: CoachReply, req: CoachRequest): LeakResult {
   const personWords = Array.from(reply.text.matchAll(new RegExp(PERSON_RE.source, "gi")), (x) => x[0]);
   const late = req.stage === "move" || req.stage === "explain";
   const noCandidateNamed = late && !m.lines.some((l) => mentions(reply.text, l.move));
-  const overWordCap = words > WORD_CAP[req.stage];
-  // pieceSquare is informational at "hint" (the rung is allowed to point at the piece and the target square).
-  const pieceSquareFails = req.stage !== "hint" && pieceSquare.length > 0;
+  const overWordCap = words > WORD_CAP(req.stage);
+  // pieceSquare is informational at "piece" (the rung highlights the piece; the square should still be hidden).
+  const pieceSquareFails = req.stage !== "piece" && pieceSquare.length > 0;
   const pass =
     illegalMoves.length === 0 &&
     giveaway.length === 0 &&
@@ -225,12 +225,13 @@ async function judgeReply(c: EvalCase, stage: Stage, reply: CoachReply): Promise
   const best = m.lines[0];
   const rungRule: Record<Stage, string> = {
     attempt: "react to the player's attempt; must not name the best move, a near-best candidate or the motif",
-    nudge: "one general pointer; no move names, no squares of the answer",
-    hint: "a pointed hint: the piece that matters or the opponent's threat; still no best move",
+    focus: "one short pointer to the area of the board that matters (the board highlights the zone and fades the rest); no move names, no piece names of the answer, no destination squares",
+    threat: "what the opponent threatens, drawn as red arrows; must not reveal the player's best move",
+    piece: "which of the player's pieces should move (its square is highlighted); must not reveal where it goes",
     move: "name the best move and the idea behind it",
     explain: "the full picture: why the best move works, what the played move allowed, the line, the motif",
   };
-  const prompt = `You are grading one reply from a chess coach. The coach walks a player through a critical moment with a hint ladder (attempt -> nudge -> hint -> move -> explain).
+  const prompt = `You are grading one reply from a chess coach. The coach walks a player through a critical moment with a hint ladder (attempt -> focus -> threat -> piece -> move -> explain).
 
 Position (FEN): ${m.fenBefore}
 Player rating: ${c.player.rating}
@@ -246,7 +247,7 @@ arrows: ${JSON.stringify(reply.arrows)} squares: ${JSON.stringify(reply.squares)
 
 Grade:
 - namesIdea: does the reply convey the idea of the position (the plan, threat or motif), not just a move or an eval? At the early rungs, "names the idea" means it points toward the idea without revealing the move.
-- giveaway: at attempt/nudge/hint, does it reveal the best move or a near-best candidate (by name, by piece plus destination square, or by an arrow)? At move/explain always false.
+- giveaway: at attempt/focus/threat/piece, does it reveal the best move or a near-best candidate (by name, by piece plus destination square, or by an arrow)? At move/explain always false.
 - depthFitsRating: under 1000 = plain words, one concrete idea, no jargon; 1000-1600 = tactic named, short line; above 1600 = vocabulary and the long-term idea. Is the depth right for ${c.player.rating}?
 - forcedStyle: does it grade the person ("careless", "obvious", "you missed"), open with praise or filler, or pad with more than 3 points?
 - note: one sentence.`;
@@ -424,7 +425,7 @@ function summarize(results: CaseResult[]) {
       const why = [
         L.illegalMoves.length ? `illegal ${L.illegalMoves.join(",")}` : "",
         L.giveaway.length ? `giveaway ${L.giveaway.join(",")}` : "",
-        L.pieceSquare.length && x.stage !== "hint" ? `piece+square ${L.pieceSquare.join(",")}` : "",
+        L.pieceSquare.length && x.stage !== "piece" ? `piece+square ${L.pieceSquare.join(",")}` : "",
         L.bullets > MAX_BULLETS ? `${L.bullets} bullets` : "",
         L.overWordCap ? `${L.words} words` : "",
         L.personWords.length ? `person: ${L.personWords.join(",")}` : "",
@@ -433,8 +434,8 @@ function summarize(results: CaseResult[]) {
       lines.push(`  ${id} ${x.stage} [${x.source}]: ${why.join("; ")}`);
     }
   }
-  const hintPs = results.flatMap((r) => r.rungs.filter((x) => x.stage === "hint" && x.leak.pieceSquare.length));
-  if (hintPs.length) lines.push("", `hint rung names piece+target square in ${hintPs.length} replies (allowed by the current prompt, informational)`);
+  const piecePs = results.flatMap((r) => r.rungs.filter((x) => x.stage === "piece" && x.leak.pieceSquare.length));
+  if (piecePs.length) lines.push("", `piece rung names piece+target square in ${piecePs.length} replies (informational)`);
   return lines.join("\n");
 }
 
