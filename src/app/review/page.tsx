@@ -25,6 +25,7 @@ import {
   skipToFuture,
   type QueueState,
   type ReviewItem,
+  type ReviewRep,
 } from "@/lib/review/queue";
 import { ladderLevelFor, type RubricGrade } from "@/lib/review/rubric";
 import { ladderAfterFind, levelFor, solvedCold, toRep, type Level } from "@/lib/review/session";
@@ -49,6 +50,30 @@ function solvedHow(hints: number, wrong: number): string {
   const tries = wrong === 1 ? "1 wrong try" : `${wrong} wrong tries`;
   if (hints && wrong) return `with ${plural(hints, "hint")} after ${tries}`;
   return hints ? `with ${plural(hints, "hint")}` : `after ${tries}`;
+}
+
+/**
+ * End-of-rep line. What happens next comes from the same verdict the queue
+ * records (a Form A / Form B grade outranks the ladder), so the text can't
+ * disagree with the schedule.
+ */
+function endMessage(end: LadderEnd, r: Omit<ReviewRep, "at">, item: ReviewItem, clock: number): string {
+  const how =
+    r.verdict === "right-idea"
+      ? "You named the idea."
+      : r.verdict === "noticed"
+        ? "You spotted the moment in the stream."
+        : r.verdict === "missed"
+          ? "The stream pick was off."
+          : solvedCold(end)
+            ? "Found it first try with no hints."
+            : end.solved
+              ? `Solved ${solvedHow(end.hintsTaken, end.wrongAttempts ?? 0)}.`
+              : "Answer shown.";
+  if (r.verdict === "wrong" || r.verdict === "missed") return `${how} This position comes back sooner, with a bit more help.`;
+  if (r.memorizedFlag) return `${how} That was fast on a position you've seen before, so it stays at this step to check you know the idea, not the position.`;
+  if (recordRep(item, r, clock).box === 3) return `${how} This idea is learned and leaves the queue.`;
+  return `${how} It comes back later with less help.`;
 }
 
 type Rep =
@@ -386,11 +411,7 @@ function RepView({
       {end && (
         <Card className="flex animate-fade-up flex-col items-start gap-3 p-5 text-sm">
           <p className="text-base text-fg">
-            {solvedCold(end)
-              ? "Found it first try with no hints. It comes back later with less help."
-              : end.solved
-                ? `Solved ${solvedHow(end.hintsTaken, end.wrongAttempts ?? 0)}. This position comes back sooner, with a bit more help.`
-                : "Answer shown. This position comes back sooner, with a bit more help."}
+            {endMessage(end, toRep({ startLevel: level, positionKind: pos.kind, ladder: end, ...form }), item, clock)}
           </p>
           {label?.idea && (
             <p className="text-fg-2 italic">

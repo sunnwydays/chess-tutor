@@ -138,6 +138,7 @@ export default function MomentPanel({
   const isSolved = (xs: Exchange[]) =>
     xs.some((e) => e.stage === "attempt" && (e.response.attemptVerdict === "best" || e.response.attemptVerdict === "good"));
   const solved = isSolved(exchanges);
+  const oneTry = level <= 2;
 
   const explained = taken("explain");
   // The engine line (and SAN previews of any move) only exist from the move rung on.
@@ -327,6 +328,8 @@ export default function MomentPanel({
       setBoardKey((k) => k + 1);
       return false;
     }
+    // Level 2 and below: one try. After a miss, only "Show the answer" is left.
+    if (oneTry && taken("attempt") && !solved) return false;
     if (firstAttemptMs.current === null) firstAttemptMs.current = Date.now() - startedAt.current;
     void send("attempt", san);
     return true;
@@ -477,7 +480,7 @@ export default function MomentPanel({
           focus={viewing ? undefined : focus}
           pulseSquares={viewing ? [] : pulse}
           lastMove={lastMove}
-          onMove={viewing ? undefined : onMove}
+          onMove={viewing || (oneTry && hasAttempt && !solved) ? undefined : onMove}
         />
       </div>
 
