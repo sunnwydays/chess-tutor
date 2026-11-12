@@ -201,7 +201,7 @@ export default function ReviewPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button disabled={due > 0 || pending === 0} onClick={skip} title="Advance the virtual clock to the next due date">
+        <Button disabled={skipToFuture(queue.items, queue.clock) === queue.clock} onClick={skip} title="Advance the virtual clock to the next due date">
           Skip to the future
         </Button>
         <Button variant="ghost" className="ml-auto text-muted hover:text-danger" onClick={reset}>

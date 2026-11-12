@@ -97,7 +97,8 @@ describe("queue selection", () => {
     const a = { ...createItem("a", "x", START, 0), dueAt: 500, box: 1 as const };
     const b = { ...createItem("b", "x", START, 0), dueAt: 300, box: 2 as const };
     expect(skipToFuture([a, b], 100)).toBe(300);
-    expect(skipToFuture([a, b], 300)).toBe(300);
+    expect(skipToFuture([a, b], 300)).toBe(500);
+    expect(skipToFuture([a, b], 500)).toBe(500);
     expect(skipToFuture([], 100)).toBe(100);
   });
 });

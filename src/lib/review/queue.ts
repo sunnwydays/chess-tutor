@@ -139,9 +139,8 @@ export function dueCount(items: ReviewItem[], now: number): number {
   return items.filter((it) => it.box < 3 && it.dueAt <= now).length;
 }
 
-/** Next virtual time something becomes due; `now` if something is due already or nothing is pending. */
+/** Next virtual time something becomes due after `now`; `now` if nothing is scheduled later. */
 export function skipToFuture(items: ReviewItem[], now: number): number {
-  if (dueCount(items, now) > 0) return now;
   let min = Infinity;
   for (const it of items) {
     if (it.box < 3 && it.dueAt > now && it.dueAt < min) min = it.dueAt;
